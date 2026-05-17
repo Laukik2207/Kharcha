@@ -2,13 +2,6 @@ import User from '../models/User.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
-import jwt from 'jsonwebtoken';
-
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
-};
 
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -16,7 +9,7 @@ export const register = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    throw new ApiError(400, 'User already exists');
+    throw new ApiError(409, 'Email already registered');
   }
 
   const user = await User.create({
@@ -25,18 +18,11 @@ export const register = asyncHandler(async (req, res) => {
     password
   });
 
-  if (user) {
-    res.status(201).json(
-      new ApiResponse(201, {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id)
-      }, 'User registered successfully')
-    );
-  } else {
-    throw new ApiError(400, 'Invalid user data');
-  }
+  const token = user.generateJWT();
+
+  res.status(201).json(
+    new ApiResponse(201, { token, user }, 'Account created successfully')
+  );
 });
 
 export const login = asyncHandler(async (req, res) => {
@@ -44,20 +30,32 @@ export const login = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email }).select('+password');
 
-  if (user && (await user.matchPassword(password))) {
-    res.json(
-      new ApiResponse(200, {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id)
-      }, 'Login successful')
-    );
-  } else {
+  if (!user || !(await user.matchPassword(password))) {
     throw new ApiError(401, 'Invalid email or password');
   }
+
+  const token = user.generateJWT();
+
+  // Removing password before sending user object as response
+  user.password = undefined;
+
+  res.json(
+    new ApiResponse(200, { token, user }, 'Login successful')
+  );
 });
 
 export const getMe = asyncHandler(async (req, res) => {
-  res.json(new ApiResponse(200, req.user, 'User profile fetched'));
+  res.json(new ApiResponse(200, req.user, 'User fetched successfully'));
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const { name, avatar } = req.body;
+  
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  );
+
+  res.json(new ApiResponse(200, updatedUser, 'Profile updated'));
 });

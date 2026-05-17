@@ -27,11 +27,39 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <Loader />;
+  }
+  
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route 
+        path="/login" 
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } 
+      />
+      <Route 
+        path="/register" 
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        } 
+      />
       
       <Route
         path="/"
@@ -47,6 +75,8 @@ const AppRoutes = () => {
         <Route path="analytics" element={<Analytics />} />
         <Route path="insights" element={<Insights />} />
       </Route>
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
