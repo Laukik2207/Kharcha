@@ -1,12 +1,10 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import routes from './src/routes/index.js';
 import { notFound, errorHandler } from './src/middleware/errorMiddleware.js';
-
-dotenv.config();
 
 const app = express();
 

@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import { auth } from '../config/firebase.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
 import User from '../models/User.js';
@@ -15,18 +15,28 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decodedToken = await auth.verifyIdToken(token);
     
-    const user = await User.findById(decoded.id).select('-password');
-    if (!user) {
-      throw new ApiError(401, 'User no longer exists.');
-    }
+    const { uid, email, name, picture } = decodedToken;
+    const provider = decodedToken.firebase.sign_in_provider === 'google.com' ? 'google' : 'email';
+
+    const user = await User.findOneAndUpdate(
+      { firebaseUid: uid },
+      { 
+        email, 
+        name: name || undefined, 
+        avatar: picture || undefined, 
+        firebaseUid: uid,
+        provider
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
     
     req.user = user;
     next();
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      throw new ApiError(401, 'Token expired. Please login again.');
+    if (error.code === 'auth/id-token-expired') {
+      throw new ApiError(401, 'Session expired. Please login again.');
     }
     if (error instanceof ApiError) {
       throw error;
