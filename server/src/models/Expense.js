@@ -2,29 +2,44 @@ import mongoose from 'mongoose';
 
 const expenseSchema = new mongoose.Schema(
   {
-    userId: {
+    createdBy: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
-      ref: 'User'
+      index: true
     },
     amount: {
       type: Number,
-      required: [true, 'Please add an amount']
-    },
-    merchant: {
-      type: String,
-      required: [true, 'Please add a merchant']
+      required: true,
+      min: 0.01
     },
     category: {
       type: String,
-      required: [true, 'Please add a category']
+      required: true,
+      enum: ['Food', 'Shopping', 'Groceries', 'Petrol', 'Entertainment', 'Bills', 'Travel', 'Health', 'Others'],
+      default: 'Others'
     },
-    description: {
-      type: String
+    merchant: {
+      type: String,
+      required: true,
+      trim: true,
+      maxLength: 100
+    },
+    note: {
+      type: String,
+      trim: true,
+      maxLength: 500,
+      default: ''
     },
     date: {
       type: Date,
-      required: [true, 'Please add a date']
+      required: true,
+      default: Date.now
+    },
+    paymentMethod: {
+      type: String,
+      enum: ['UPI', 'Card', 'Cash', 'Net Banking', 'Other'],
+      default: 'UPI'
     },
     source: {
       type: String,
@@ -36,6 +51,15 @@ const expenseSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+expenseSchema.index({ createdBy: 1, date: -1 });
+
+expenseSchema.set('toJSON', {
+  transform: function(doc, ret, options) {
+    delete ret.__v;
+    return ret;
+  }
+});
 
 const Expense = mongoose.model('Expense', expenseSchema);
 export default Expense;
