@@ -54,18 +54,24 @@ export const useExpenses = () => {
     fetchExpenses();
   }, [fetchExpenses]);
 
-  const setFilter = (key, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value,
-      // Reset page to 1 whenever any filter changes, unless the filter being changed IS the page
-      ...(key !== 'page' ? { page: 1 } : {})
-    }));
-  };
+  const setFilter = useCallback((key, value) => {
+    setFilters(prev => {
+      // Prevent unnecessary state updates if the value hasn't changed
+      if (prev[key] === value && (key === 'page' || prev.page === 1)) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [key]: value,
+        // Reset page to 1 whenever any filter changes, unless the filter being changed IS the page
+        ...(key !== 'page' ? { page: 1 } : {})
+      };
+    });
+  }, []);
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setFilters(defaultFilters);
-  };
+  }, []);
 
   const addExpense = async (data) => {
     try {
