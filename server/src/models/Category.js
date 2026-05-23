@@ -5,17 +5,24 @@ const categorySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      unique: true
+      unique: true,
+      enum: ['Food', 'Shopping', 'Groceries', 'Petrol', 'Entertainment', 'Bills', 'Travel', 'Health', 'Others']
     },
     icon: {
-      type: String
+      type: String,
+      default: '📦'
     },
     color: {
-      type: String
+      type: String,
+      default: '#6b7280'
+    },
+    description: {
+      type: String,
+      default: ''
     },
     isDefault: {
       type: Boolean,
-      default: false
+      default: true
     }
   },
   {

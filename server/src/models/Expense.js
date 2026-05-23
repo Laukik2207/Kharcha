@@ -45,6 +45,10 @@ const expenseSchema = new mongoose.Schema(
       type: String,
       enum: ['manual', 'csv'],
       default: 'manual'
+    },
+    isUncategorized: {
+      type: Boolean,
+      default: false
     }
   },
   {
@@ -53,6 +57,7 @@ const expenseSchema = new mongoose.Schema(
 );
 
 expenseSchema.index({ createdBy: 1, date: -1 });
+expenseSchema.index({ createdBy: 1, isUncategorized: 1 });
 
 expenseSchema.set('toJSON', {
   transform: function(doc, ret, options) {

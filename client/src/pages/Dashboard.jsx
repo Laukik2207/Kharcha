@@ -13,6 +13,8 @@ import TopMerchantsCard from '../components/dashboard/TopMerchantsCard';
 import DailyTrendChart from '../components/charts/DailyTrendChart';
 import { formatINR } from '../utils/formatCurrency';
 import { Link } from 'react-router-dom';
+import { getUnknownCount } from '../services/unknownMerchantService';
+import { AlertTriangle } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -35,9 +37,22 @@ const Dashboard = () => {
   // We need the expenses hook just for the recent transactions list
   const { expenses, fetchExpenses, loading: expensesLoading } = useExpenses();
 
+  const [unknownCount, setUnknownCount] = React.useState(0);
+
   useEffect(() => {
     // Fetch last 5 expenses
     fetchExpenses();
+    
+    // Fetch unknown count
+    const fetchCount = async () => {
+      try {
+        const data = await getUnknownCount();
+        setUnknownCount(data.count || 0);
+      } catch (err) {
+        console.error('Failed to fetch unknown count', err);
+      }
+    };
+    fetchCount();
   }, [fetchExpenses]);
 
   // Check if we have absolutely no data (user has 0 expenses)
@@ -82,6 +97,27 @@ const Dashboard = () => {
           onYearChange={setSelectedYear}
         />
       </div>
+
+      {/* Action Required Alert */}
+      {unknownCount > 0 && (
+        <div className="bg-amber-500/10 border-l-4 border-amber-500 rounded-r-xl p-4 flex items-center justify-between shadow-sm animate-fade-in">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="text-amber-500 w-6 h-6 shrink-0" />
+            <div>
+              <h3 className="text-amber-500 font-bold text-sm">Action Required</h3>
+              <p className="text-amber-400/80 text-xs mt-0.5">
+                You have {unknownCount} transactions with unknown merchants.
+              </p>
+            </div>
+          </div>
+          <Link 
+            to="/unknown-merchants" 
+            className="text-xs font-bold text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+          >
+            Review & Categorize →
+          </Link>
+        </div>
+      )}
 
       {/* Row 1: Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

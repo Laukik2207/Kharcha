@@ -1,17 +1,6 @@
 import React from 'react';
 import { formatINR, formatDate } from '../../utils/formatCurrency';
-
-const CATEGORY_COLORS = {
-  Food: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-  Shopping: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  Groceries: 'bg-green-500/10 text-green-500 border-green-500/20',
-  Petrol: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-  Entertainment: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-  Bills: 'bg-red-500/10 text-red-500 border-red-500/20',
-  Travel: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  Health: 'bg-teal-500/10 text-teal-500 border-teal-500/20',
-  Others: 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-};
+import CategoryBadge from '../categories/CategoryBadge';
 
 const ExpenseTable = ({ 
   expenses, 
@@ -79,9 +68,7 @@ const ExpenseTable = ({
                   {expense.note && <div className="text-xs text-gray-500 truncate max-w-xs">{expense.note}</div>}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.Others}`}>
-                    {expense.category}
-                  </span>
+                  <CategoryBadge category={expense.category} size="md" />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-200">
                   {formatINR(expense.amount)}
@@ -130,9 +117,7 @@ const ExpenseTable = ({
             </div>
             
             <div className="flex justify-between items-center pt-2">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.Others}`}>
-                {expense.category}
-              </span>
+              <CategoryBadge category={expense.category} size="sm" />
               <div className="flex space-x-4">
                 <button onClick={() => onEdit(expense)} className="text-gray-400 hover:text-gray-200">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>

@@ -12,6 +12,8 @@ import Expenses from './pages/Expenses';
 import Upload from './pages/Upload';
 import Analytics from './pages/Analytics';
 import Insights from './pages/Insights';
+import Categories from './pages/Categories';
+import UnknownMerchants from './pages/UnknownMerchants';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -74,6 +76,8 @@ const AppRoutes = () => {
         <Route path="upload" element={<Upload />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="insights" element={<Insights />} />
+        <Route path="categories" element={<Categories />} />
+        <Route path="unknown-merchants" element={<UnknownMerchants />} />
       </Route>
       
       <Route path="*" element={<Navigate to="/" replace />} />

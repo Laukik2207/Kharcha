@@ -1,15 +1,40 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, UploadCloud, BarChart2, Lightbulb, LogOut, Wallet } from 'lucide-react';
+import { LayoutDashboard, Receipt, UploadCloud, BarChart2, Lightbulb, LogOut, Wallet, Tag, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { getUnknownCount } from '../../services/unknownMerchantService';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const { user, logout } = useAuth();
+  const [unknownCount, setUnknownCount] = React.useState(0);
+
+  React.useEffect(() => {
+    let mounted = true;
+    const fetchCount = async () => {
+      try {
+        const data = await getUnknownCount();
+        if (mounted) setUnknownCount(data.count || 0);
+      } catch (err) {
+        console.error('Failed to fetch unknown count', err);
+      }
+    };
+    if (user) {
+      fetchCount();
+      // Poll every 30 seconds
+      const interval = setInterval(fetchCount, 30000);
+      return () => {
+        mounted = false;
+        clearInterval(interval);
+      };
+    }
+  }, [user]);
 
   const navItems = [
     { name: 'Dashboard', path: '/', icon: <LayoutDashboard size={20} /> },
     { name: 'Expenses', path: '/expenses', icon: <Receipt size={20} /> },
     { name: 'Upload', path: '/upload', icon: <UploadCloud size={20} /> },
+    { name: 'Unknown Merchants', path: '/unknown-merchants', icon: <HelpCircle size={20} /> },
+    { name: 'Categories', path: '/categories', icon: <Tag size={20} /> },
     { name: 'Analytics', path: '/analytics', icon: <BarChart2 size={20} /> },
     { name: 'Insights', path: '/insights', icon: <Lightbulb size={20} /> },
   ];
@@ -40,7 +65,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
               to={item.path}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
-                `flex items-center px-4 py-3 rounded-lg transition-colors ${
+                `flex items-center px-4 py-3 rounded-lg transition-colors relative ${
                   isActive
                     ? 'bg-primary-600/20 text-primary-400 border-l-2 border-primary-500'
                     : 'text-gray-400 hover:bg-gray-800 hover:text-gray-100 border-l-2 border-transparent'
@@ -49,6 +74,11 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             >
               <span className="mr-3">{item.icon}</span>
               <span className="font-medium">{item.name}</span>
+              {item.name === 'Unknown Merchants' && unknownCount > 0 && (
+                <span className="absolute right-4 bg-red-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                  {unknownCount > 99 ? '99+' : unknownCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

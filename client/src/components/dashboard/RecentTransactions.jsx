@@ -1,18 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatINR, formatDate } from '../../utils/formatCurrency';
-
-const CATEGORY_COLORS = {
-  Food: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
-  Shopping: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
-  Groceries: 'bg-green-500/10 text-green-500 border-green-500/20',
-  Petrol: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-  Entertainment: 'bg-pink-500/10 text-pink-500 border-pink-500/20',
-  Bills: 'bg-red-500/10 text-red-500 border-red-500/20',
-  Travel: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  Health: 'bg-teal-500/10 text-teal-500 border-teal-500/20',
-  Others: 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-};
+import CategoryBadge, { CATEGORY_ICONS, CATEGORY_COLORS } from '../categories/CategoryBadge';
 
 const RecentTransactions = ({ expenses, loading }) => {
   return (
@@ -46,18 +35,18 @@ const RecentTransactions = ({ expenses, loading }) => {
               <div key={expense._id} className="p-4 hover:bg-gray-800/30 transition-colors flex items-center justify-between group">
                 <div className="flex items-center space-x-4 min-w-0">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center border flex-shrink-0 ${CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.Others}`}>
-                    <span className="text-lg font-bold">{expense.category.charAt(0)}</span>
+                    <span className="text-lg">{CATEGORY_ICONS[expense.category] || CATEGORY_ICONS.Others}</span>
                   </div>
-                  <div className="min-w-0">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-200 truncate">{expense.merchant}</p>
-                    <p className="text-xs text-gray-500">{formatDate(expense.date)}</p>
+                    <p className="text-xs text-gray-500 truncate">{formatDate(expense.date)} • {expense.paymentMethod}</p>
+                    <div className="mt-1">
+                      <CategoryBadge category={expense.category} size="sm" />
+                    </div>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 ml-4">
                   <p className="text-sm font-bold text-primary-400">{formatINR(expense.amount)}</p>
-                  <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${CATEGORY_COLORS[expense.category] || CATEGORY_COLORS.Others}`}>
-                    {expense.category}
-                  </span>
                 </div>
               </div>
             ))}

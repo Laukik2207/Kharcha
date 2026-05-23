@@ -1,18 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { formatINR } from '../../utils/formatCurrency';
-
-const CATEGORY_COLORS = {
-  Food: '#f97316',
-  Shopping: '#a855f7',
-  Groceries: '#22c55e',
-  Petrol: '#eab308',
-  Entertainment: '#ec4899',
-  Bills: '#ef4444',
-  Travel: '#3b82f6',
-  Health: '#14b8a6',
-  Others: '#6b7280',
-};
+import { CATEGORY_COLORS } from '../categories/CategoryBadge';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
@@ -69,9 +58,21 @@ const CategoryBarChart = ({ data, loading, height = 300 }) => {
           />
           <Tooltip content={<CustomTooltip />} cursor={{fill: '#374151', opacity: 0.2}} />
           <Bar dataKey="totalAmount" radius={[0, 4, 4, 0]} barSize={20}>
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={CATEGORY_COLORS[entry.category] || CATEGORY_COLORS.Others} />
-            ))}
+            {data.map((entry, index) => {
+              const bgClass = CATEGORY_COLORS[entry.category] || CATEGORY_COLORS.Others;
+              // Extract a hex color from the tailwind text color class if possible, or fallback to default tailwind colors for chart fill
+              let fillColor = '#6b7280';
+              if (bgClass.includes('orange')) fillColor = '#f97316';
+              else if (bgClass.includes('purple')) fillColor = '#a855f7';
+              else if (bgClass.includes('green')) fillColor = '#22c55e';
+              else if (bgClass.includes('yellow')) fillColor = '#eab308';
+              else if (bgClass.includes('pink')) fillColor = '#ec4899';
+              else if (bgClass.includes('red')) fillColor = '#ef4444';
+              else if (bgClass.includes('blue')) fillColor = '#3b82f6';
+              else if (bgClass.includes('teal')) fillColor = '#14b8a6';
+
+              return <Cell key={`cell-${index}`} fill={fillColor} />;
+            })}
           </Bar>
         </BarChart>
       </ResponsiveContainer>

@@ -1,10 +1,20 @@
 import express from 'express';
-import { uploadStatement } from '../controllers/uploadController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import upload from '../middleware/uploadMiddleware.js';
+import { uploadSingle, uploadErrorHandler } from '../middleware/uploadMiddleware.js';
+import { 
+  uploadStatement, 
+  getUploadHistory, 
+  getUploadStatus, 
+  deleteUploadRecord 
+} from '../controllers/uploadController.js';
 
 const router = express.Router();
 
-router.post('/', protect, upload.single('file'), uploadStatement);
+router.use(protect);
+
+router.post('/', uploadSingle, uploadErrorHandler, uploadStatement);
+router.get('/history', getUploadHistory);
+router.get('/status/:id', getUploadStatus);
+router.delete('/:id', deleteUploadRecord);
 
 export default router;

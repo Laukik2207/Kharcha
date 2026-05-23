@@ -96,7 +96,8 @@ export const createExpense = asyncHandler(async (req, res) => {
     date,
     paymentMethod,
     createdBy: req.user._id,
-    source: 'manual'
+    source: 'manual',
+    isUncategorized: false
   });
 
   res.status(201).json(new ApiResponse(201, expense, 'Expense added successfully'));
@@ -124,7 +125,7 @@ export const updateExpense = asyncHandler(async (req, res) => {
 
   const updated = await Expense.findOneAndUpdate(
     { _id: req.params.id, createdBy: req.user._id },
-    { amount, category, merchant, note, date, paymentMethod },
+    { amount, category, merchant, note, date, paymentMethod, isUncategorized: false },
     { new: true, runValidators: true }
   );
 
