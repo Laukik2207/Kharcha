@@ -65,23 +65,24 @@ export const useInsights = (options = {}) => {
     await fetchInsight('budget', insightService.getBudgetAdvice, budgetGoal);
   };
 
-  const refresh = async (type) => {
-    updateState(type, { loading: true, error: null });
-    
-    // Map local state type to backend type enum
-    const typeMap = {
-      summary: 'monthly_summary',
-      savings: 'savings',
-      anomalies: 'anomalies',
-      patterns: 'patterns'
-    };
+  const refreshAll = async () => {
+    updateState('summary', { loading: true, error: null });
+    updateState('savings', { loading: true, error: null });
+    updateState('anomalies', { loading: true, error: null });
+    updateState('patterns', { loading: true, error: null });
 
     try {
-      const data = await insightService.refreshInsight(typeMap[type], selectedMonth, selectedYear);
-      updateState(type, { data, loading: false });
+      const data = await insightService.refreshCompleteAnalysis(selectedMonth, selectedYear);
+      updateState('summary', { data: data.summary, loading: false });
+      updateState('savings', { data: data.savings, loading: false });
+      updateState('anomalies', { data: data.anomalies, loading: false });
+      updateState('patterns', { data: data.patterns, loading: false });
     } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message || 'Failed to refresh insight';
-      updateState(type, { error: errorMessage, loading: false });
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to refresh insights';
+      updateState('summary', { error: errorMessage, loading: false });
+      updateState('savings', { error: errorMessage, loading: false });
+      updateState('anomalies', { error: errorMessage, loading: false });
+      updateState('patterns', { error: errorMessage, loading: false });
     }
   };
 
@@ -143,6 +144,6 @@ export const useInsights = (options = {}) => {
     setSelectedMonth,
     setSelectedYear,
     fetchBudgetAdvice,
-    refresh
+    refreshAll
   };
 };

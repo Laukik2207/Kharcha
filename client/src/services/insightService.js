@@ -25,6 +25,11 @@ export const getCompleteAnalysis = async (month, year) => {
   return response.data.data;
 };
 
+export const refreshCompleteAnalysis = async (month, year) => {
+  const response = await api.post('/insights/all/refresh', { month, year });
+  return response.data.data;
+};
+
 export const getBudgetAdvice = async (budgetGoal, month, year) => {
   const response = await api.post('/insights/budget', { budgetGoal, month, year });
   return response.data.data;

@@ -130,14 +130,24 @@ export const getSpendingPatterns = asyncHandler(async (req, res) => {
   await handleInsightRequest(req, res, 'patterns', 'weeklyPattern');
 });
 
-export const getCompleteAnalysis = asyncHandler(async (req, res) => {
-  const { month, year } = req.query;
-  const userId = req.user._id;
+const saveInsight = async (userId, type, month, year, data, expenseSnapshot) => {
+  return AIInsight.findOneAndUpdate(
+    { userId, type, month, year },
+    {
+      userId,
+      type,
+      month,
+      year,
+      data,
+      expenseSnapshot,
+      generatedAt: new Date(),
+      cached: false
+    },
+    { upsert: true }
+  );
+};
 
-  if (!month || !year) {
-    throw new ApiError(400, 'Month and year are required');
-  }
-
+const generateCompleteAnalysisData = async (userId, month, year) => {
   // 1. Check cache for all 4 types first
   const types = ['monthly_summary', 'savings', 'anomalies', 'patterns'];
   const cachedResults = await Promise.all(
@@ -147,42 +157,62 @@ export const getCompleteAnalysis = asyncHandler(async (req, res) => {
   const isFullyCached = cachedResults.every(c => c !== null);
 
   if (isFullyCached) {
-    return res.status(200).json(new ApiResponse(200, {
+    return {
       summary: cachedResults[0].data,
       savings: cachedResults[1].data,
       anomalies: cachedResults[2].data,
       patterns: cachedResults[3].data,
       cached: true,
       generatedAt: cachedResults[0].generatedAt
-    }, 'Analysis retrieved from cache'));
+    };
   }
 
   // 2. Not fully cached, generate all at once
-  const expenseData = await buildFinancialContext(userId, parseInt(month), parseInt(year));
+  const expenseData = await buildExpenseData(userId, parseInt(month), parseInt(year));
   
   if (!expenseData) {
-    return res.status(200).json(new ApiResponse(200, null, 'No data available for this month'));
+    return null;
   }
 
   const allInsightsData = await generateInsight('allInsights', expenseData);
 
   // 3. Save each part to cache
   const savePromises = [];
-  if (allInsightsData.summary) savePromises.push(saveInsight(userId, 'monthly_summary', parseInt(month), parseInt(year), allInsightsData.summary, expenseData));
-  if (allInsightsData.savings) savePromises.push(saveInsight(userId, 'savings', parseInt(month), parseInt(year), allInsightsData.savings, expenseData));
-  if (allInsightsData.anomalies) savePromises.push(saveInsight(userId, 'anomalies', parseInt(month), parseInt(year), allInsightsData.anomalies, expenseData));
-  if (allInsightsData.patterns) savePromises.push(saveInsight(userId, 'patterns', parseInt(month), parseInt(year), allInsightsData.patterns, expenseData));
+  const pMonth = parseInt(month);
+  const pYear = parseInt(year);
+  
+  if (allInsightsData.summary) savePromises.push(saveInsight(userId, 'monthly_summary', pMonth, pYear, allInsightsData.summary, expenseData));
+  if (allInsightsData.savings) savePromises.push(saveInsight(userId, 'savings', pMonth, pYear, allInsightsData.savings, expenseData));
+  if (allInsightsData.anomalies) savePromises.push(saveInsight(userId, 'anomalies', pMonth, pYear, allInsightsData.anomalies, expenseData));
+  if (allInsightsData.patterns) savePromises.push(saveInsight(userId, 'patterns', pMonth, pYear, allInsightsData.patterns, expenseData));
   
   await Promise.all(savePromises);
 
-  res.status(200).json(new ApiResponse(200, {
+  return {
     summary: allInsightsData.summary,
     savings: allInsightsData.savings,
     anomalies: allInsightsData.anomalies,
     patterns: allInsightsData.patterns,
     cached: false,
     generatedAt: new Date()
-  }, 'Analysis generated successfully'));
+  };
+};
+
+export const getCompleteAnalysis = asyncHandler(async (req, res) => {
+  const { month, year } = req.query;
+  const userId = req.user._id;
+
+  if (!month || !year) {
+    throw new ApiError(400, 'Month and year are required');
+  }
+
+  const data = await generateCompleteAnalysisData(userId, month, year);
+  
+  if (!data) {
+    return res.status(200).json(new ApiResponse(200, null, 'No data available for this month'));
+  }
+
+  res.status(200).json(new ApiResponse(200, data, data.cached ? 'Analysis retrieved from cache' : 'Analysis generated successfully'));
 });
 
 export const getBudgetAdvice = asyncHandler(async (req, res) => {
@@ -244,6 +274,27 @@ export const refreshInsight = asyncHandler(async (req, res) => {
 
   await handleInsightRequest(reqMock, resMock, type, promptTypeMap[type]);
   res.json(responseData);
+});
+
+export const refreshCompleteAnalysis = asyncHandler(async (req, res) => {
+  const { month, year } = req.body;
+  const userId = req.user._id;
+  
+  if (!month || !year) {
+    throw new ApiError(400, 'Month and year are required');
+  }
+
+  // Delete all 4 from cache
+  const types = ['monthly_summary', 'savings', 'anomalies', 'patterns'];
+  await AIInsight.deleteMany({ userId, type: { $in: types }, month, year });
+
+  const data = await generateCompleteAnalysisData(userId, month, year);
+  
+  if (!data) {
+    return res.status(200).json(new ApiResponse(200, null, 'No data available for this month'));
+  }
+
+  res.status(200).json(new ApiResponse(200, data, 'Analysis refreshed successfully'));
 });
 
 export const getInsightHistory = asyncHandler(async (req, res) => {

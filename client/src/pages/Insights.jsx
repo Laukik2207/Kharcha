@@ -7,7 +7,7 @@ import SavingsCard from '../components/insights/SavingsCard';
 import AnomalyCard from '../components/insights/AnomalyCard';
 import PatternCard from '../components/insights/PatternCard';
 import BudgetAdvisorCard from '../components/insights/BudgetAdvisorCard';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 
 const Insights = () => {
   const {
@@ -15,7 +15,7 @@ const Insights = () => {
     loading, error,
     selectedMonth, selectedYear,
     setSelectedMonth, setSelectedYear,
-    fetchBudgetAdvice, refresh
+    fetchBudgetAdvice, refreshAll
   } = useInsights();
 
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -30,12 +30,22 @@ const Insights = () => {
           <h2 className="text-xl font-bold text-gray-100">Financial Intelligence</h2>
           <p className="text-sm text-gray-400 mt-1">Select a month to analyze your spending</p>
         </div>
-        <MonthYearSelector 
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          onMonthChange={setSelectedMonth}
-          onYearChange={setSelectedYear}
-        />
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={refreshAll}
+            disabled={loading.summary || loading.savings || loading.anomalies || loading.patterns}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 text-sm font-medium rounded-lg transition-colors border border-gray-700 disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={(loading.summary || loading.savings || loading.anomalies || loading.patterns) ? 'animate-spin' : ''} />
+            <span className="hidden sm:inline">Refresh Insights</span>
+          </button>
+          <MonthYearSelector 
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            onMonthChange={setSelectedMonth}
+            onYearChange={setSelectedYear}
+          />
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -45,7 +55,6 @@ const Insights = () => {
             data={summary} 
             loading={loading.summary} 
             error={error.summary}
-            onRefresh={() => refresh('summary')}
             cached={summary?.cached}
             generatedAt={summary?.generatedAt}
           />
@@ -57,7 +66,6 @@ const Insights = () => {
             data={savings} 
             loading={loading.savings} 
             error={error.savings}
-            onRefresh={() => refresh('savings')}
             cached={savings?.cached}
             generatedAt={savings?.generatedAt}
           />
@@ -65,7 +73,6 @@ const Insights = () => {
             data={anomalies} 
             loading={loading.anomalies} 
             error={error.anomalies}
-            onRefresh={() => refresh('anomalies')}
             cached={anomalies?.cached}
             generatedAt={anomalies?.generatedAt}
           />
@@ -77,7 +84,6 @@ const Insights = () => {
             data={patterns} 
             loading={loading.patterns} 
             error={error.patterns}
-            onRefresh={() => refresh('patterns')}
             cached={patterns?.cached}
             generatedAt={patterns?.generatedAt}
           />
