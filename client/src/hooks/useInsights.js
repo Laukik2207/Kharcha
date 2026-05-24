@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as insightService from '../services/insightService';
 
-export const useInsights = () => {
+export const useInsights = (options = {}) => {
+  const { autoFetch = true, types = ['summary', 'savings', 'anomalies', 'patterns'] } = options;
+
   const [summary, setSummary] = useState(null);
   const [savings, setSavings] = useState(null);
   const [anomalies, setAnomalies] = useState(null);
@@ -59,16 +61,6 @@ export const useInsights = () => {
     }
   };
 
-  const fetchAll = useCallback(async () => {
-    // Fire all fetch requests in parallel
-    await Promise.allSettled([
-      fetchInsight('summary', insightService.getMonthlySummary),
-      fetchInsight('savings', insightService.getSavingsRecommendations),
-      fetchInsight('anomalies', insightService.getAnomalyDetection),
-      fetchInsight('patterns', insightService.getSpendingPatterns)
-    ]);
-  }, [selectedMonth, selectedYear]);
-
   const fetchBudgetAdvice = async (budgetGoal) => {
     await fetchInsight('budget', insightService.getBudgetAdvice, budgetGoal);
   };
@@ -94,8 +86,49 @@ export const useInsights = () => {
   };
 
   useEffect(() => {
-    fetchAll();
-  }, [fetchAll]);
+    if (!autoFetch) return;
+
+    let isMounted = true;
+    
+    const runFetch = async () => {
+      if (!isMounted) return;
+
+      if (types.includes('summary') && types.length === 1) {
+        // Just fetching summary (e.g. Dashboard)
+        await fetchInsight('summary', insightService.getMonthlySummary);
+      } else {
+        // Fetch everything via the combined endpoint to save API quota
+        updateState('summary', { loading: true, error: null });
+        updateState('savings', { loading: true, error: null });
+        updateState('anomalies', { loading: true, error: null });
+        updateState('patterns', { loading: true, error: null });
+
+        try {
+          const data = await insightService.getCompleteAnalysis(selectedMonth, selectedYear);
+          if (isMounted) {
+            updateState('summary', { data: data.summary, loading: false });
+            updateState('savings', { data: data.savings, loading: false });
+            updateState('anomalies', { data: data.anomalies, loading: false });
+            updateState('patterns', { data: data.patterns, loading: false });
+          }
+        } catch (err) {
+          const errorMessage = err.response?.data?.message || err.message || 'Failed to fetch insights';
+          if (isMounted) {
+            updateState('summary', { error: errorMessage, loading: false });
+            updateState('savings', { error: errorMessage, loading: false });
+            updateState('anomalies', { error: errorMessage, loading: false });
+            updateState('patterns', { error: errorMessage, loading: false });
+          }
+        }
+      }
+    };
+    
+    runFetch();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedMonth, selectedYear, autoFetch]); // types array omitted intentionally to avoid infinite loops if passed inline
 
   return {
     summary,
@@ -109,7 +142,6 @@ export const useInsights = () => {
     selectedYear,
     setSelectedMonth,
     setSelectedYear,
-    fetchAll,
     fetchBudgetAdvice,
     refresh
   };

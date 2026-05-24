@@ -16,7 +16,12 @@ export const getAnomalyDetection = async (month, year) => {
 };
 
 export const getSpendingPatterns = async (month, year) => {
-  const response = await api.get('/insights/patterns', { params: { month, year } });
+  const response = await api.get(`/insights/patterns?month=${month}&year=${year}`);
+  return response.data.data;
+};
+
+export const getCompleteAnalysis = async (month, year) => {
+  const response = await api.get(`/insights/all?month=${month}&year=${year}`);
   return response.data.data;
 };
 

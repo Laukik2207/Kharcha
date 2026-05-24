@@ -40,7 +40,7 @@ const Dashboard = () => {
   const { expenses, fetchExpenses, loading: expensesLoading } = useExpenses();
 
   // Load AI insight summary for the selected month
-  const { summary: aiSummary, loading: aiLoading, error: aiError, refresh: refreshAi } = useInsights();
+  const { summary: aiSummary, loading: aiLoading, error: aiError, refresh: refreshAi } = useInsights({ types: ['summary'] });
 
   const [unknownCount, setUnknownCount] = React.useState(0);
 

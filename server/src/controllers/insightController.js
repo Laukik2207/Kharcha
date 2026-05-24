@@ -130,6 +130,61 @@ export const getSpendingPatterns = asyncHandler(async (req, res) => {
   await handleInsightRequest(req, res, 'patterns', 'weeklyPattern');
 });
 
+export const getCompleteAnalysis = asyncHandler(async (req, res) => {
+  const { month, year } = req.query;
+  const userId = req.user._id;
+
+  if (!month || !year) {
+    throw new ApiError(400, 'Month and year are required');
+  }
+
+  // 1. Check cache for all 4 types first
+  const types = ['monthly_summary', 'savings', 'anomalies', 'patterns'];
+  const cachedResults = await Promise.all(
+    types.map(t => getCachedInsight(userId, t, parseInt(month), parseInt(year)))
+  );
+
+  const isFullyCached = cachedResults.every(c => c !== null);
+
+  if (isFullyCached) {
+    return res.status(200).json(new ApiResponse(200, {
+      summary: cachedResults[0].data,
+      savings: cachedResults[1].data,
+      anomalies: cachedResults[2].data,
+      patterns: cachedResults[3].data,
+      cached: true,
+      generatedAt: cachedResults[0].generatedAt
+    }, 'Analysis retrieved from cache'));
+  }
+
+  // 2. Not fully cached, generate all at once
+  const expenseData = await buildFinancialContext(userId, parseInt(month), parseInt(year));
+  
+  if (!expenseData) {
+    return res.status(200).json(new ApiResponse(200, null, 'No data available for this month'));
+  }
+
+  const allInsightsData = await generateInsight('allInsights', expenseData);
+
+  // 3. Save each part to cache
+  const savePromises = [];
+  if (allInsightsData.summary) savePromises.push(saveInsight(userId, 'monthly_summary', parseInt(month), parseInt(year), allInsightsData.summary, expenseData));
+  if (allInsightsData.savings) savePromises.push(saveInsight(userId, 'savings', parseInt(month), parseInt(year), allInsightsData.savings, expenseData));
+  if (allInsightsData.anomalies) savePromises.push(saveInsight(userId, 'anomalies', parseInt(month), parseInt(year), allInsightsData.anomalies, expenseData));
+  if (allInsightsData.patterns) savePromises.push(saveInsight(userId, 'patterns', parseInt(month), parseInt(year), allInsightsData.patterns, expenseData));
+  
+  await Promise.all(savePromises);
+
+  res.status(200).json(new ApiResponse(200, {
+    summary: allInsightsData.summary,
+    savings: allInsightsData.savings,
+    anomalies: allInsightsData.anomalies,
+    patterns: allInsightsData.patterns,
+    cached: false,
+    generatedAt: new Date()
+  }, 'Analysis generated successfully'));
+});
+
 export const getBudgetAdvice = asyncHandler(async (req, res) => {
   const { budgetGoal, month = new Date().getMonth() + 1, year = new Date().getFullYear() } = req.body;
   if (!budgetGoal) throw new ApiError(400, 'Budget goal is required');

@@ -7,7 +7,7 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 export const PROMPT_TEMPLATES = {
   monthlySummary: (context) => `
@@ -116,7 +116,62 @@ Provide a JSON response with exactly this structure:
     "Specific actionable tip 3"
   ]
 }
-Return ONLY the JSON object. No markdown, no explanation.`
+Return ONLY the JSON object. No markdown, no explanation.`,
+
+  allInsights: (context) => `
+You are an expert financial AI. Analyze the user's spending data and provide a comprehensive analysis covering a summary, savings opportunities, anomalies, and behavioral patterns.
+Financial Data: ${context}
+
+Respond STRICTLY in the following JSON format without any markdown wrappers or additional text:
+{
+  "summary": {
+    "headline": "One punchy sentence summarizing this month",
+    "summary": "2-3 sentence overview of the month's spending pattern",
+    "highlights": ["Observation 1", "Observation 2", "Observation 3"],
+    "score": <number 0-100>,
+    "scoreLabel": "Excellent|Good|Fair|Needs Attention"
+  },
+  "savings": {
+    "potentialMonthlySavings": <number>,
+    "recommendations": [
+      {
+        "title": "Short title",
+        "description": "1-2 sentences with numbers",
+        "estimatedSaving": <number>,
+        "category": "<category name>",
+        "difficulty": "Easy|Medium|Hard",
+        "impact": "Low|Medium|High"
+      }
+    ]
+  },
+  "anomalies": {
+    "hasAnomalies": <boolean>,
+    "anomalies": [
+      {
+        "type": "overspend|frequency|new_category|spike",
+        "title": "Short title",
+        "description": "What is unusual",
+        "category": "<category name>",
+        "severity": "Low|Medium|High"
+      }
+    ],
+    "overallRisk": "Low|Medium|High",
+    "riskReason": "One sentence reason"
+  },
+  "patterns": {
+    "patterns": [
+      {
+        "title": "Pattern title",
+        "description": "Specific pattern observed",
+        "type": "timing|category|merchant|payment",
+        "actionable": <boolean>
+      }
+    ],
+    "behaviorSummary": "1-2 sentences overall behavior",
+    "topHabit": "Single most notable habit"
+  }
+}
+`
 };
 
 export const buildFinancialContext = (expenseData) => {
@@ -161,7 +216,7 @@ export const buildFinancialContext = (expenseData) => {
 };
 
 const callGemini = async (prompt, options = {}) => {
-  const { maxRetries = 3, retryDelay = 1000, maxOutputTokens = 1024 } = options;
+  const { maxRetries = 3, retryDelay = 2000, maxOutputTokens = 2048 } = options;
   let attempt = 0;
   let currentPrompt = prompt;
 
@@ -169,7 +224,10 @@ const callGemini = async (prompt, options = {}) => {
     try {
       const response = await model.generateContent({
         contents: [{ role: 'user', parts: [{ text: currentPrompt }] }],
-        generationConfig: { maxOutputTokens }
+        generationConfig: { 
+          maxOutputTokens,
+          responseMimeType: 'application/json' 
+        }
       });
       return response.response.text();
     } catch (error) {

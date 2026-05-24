@@ -7,10 +7,13 @@ import {
   getSpendingPatterns,
   getBudgetAdvice,
   refreshInsight,
-  getInsightHistory
+  getInsightHistory,
+  getCompleteAnalysis
 } from '../controllers/insightController.js';
 
 const router = express.Router();
+
+router.get('/all', protect, getCompleteAnalysis);
 
 router.use(protect);
 
