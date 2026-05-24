@@ -1,0 +1,45 @@
+.loader {
+  --ANIMATION-DELAY-MULTIPLIER: 70ms;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  gap: 4px;
+}
+
+.loader span {
+  padding: 0;
+  margin: 0;
+  letter-spacing: -5rem;
+  animation-delay: 0s;
+  transform: translateY(4rem);
+  animation: hideAndSeek 1s alternate infinite cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+.loader .letter-0 { animation-delay: calc(var(--ANIMATION-DELAY-MULTIPLIER) * 0); }
+.loader .letter-1 { animation-delay: calc(var(--ANIMATION-DELAY-MULTIPLIER) * 1); }
+.loader .letter-2 { animation-delay: calc(var(--ANIMATION-DELAY-MULTIPLIER) * 2); }
+.loader .letter-3 { animation-delay: calc(var(--ANIMATION-DELAY-MULTIPLIER) * 3); }
+.loader .letter-4 { animation-delay: calc(var(--ANIMATION-DELAY-MULTIPLIER) * 4); }
+.loader .letter-5 { animation-delay: calc(var(--ANIMATION-DELAY-MULTIPLIER) * 5); }
+.loader .letter-6 { animation-delay: calc(var(--ANIMATION-DELAY-MULTIPLIER) * 6); }
+
+.letter {
+  width: fit-content;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  font-family: 'Inter', sans-serif;
+}
+
+@keyframes hideAndSeek {
+  0% { transform: translateY(4rem); }
+  100% { transform: translateY(0rem); }
+}

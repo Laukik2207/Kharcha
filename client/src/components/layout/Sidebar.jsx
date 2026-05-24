@@ -44,7 +44,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
               </svg>
             </div>
-            <span className="text-xl font-bold gradient-text">Kharcha</span>
+            <span className="text-xl font-bold text-white tracking-tight">Kha<span className="text-white">₹</span>cha</span>
           </div>
           <button onClick={() => setIsOpen(false)} className="ml-auto lg:hidden text-surface-400 hover:text-white">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>

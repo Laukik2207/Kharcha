@@ -38,7 +38,7 @@ const AuthLayout = ({ children, title, subtitle }) => (
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
           </svg>
         </div>
-        <h1 className="text-4xl font-bold text-white mb-4 tracking-tight">Kharcha</h1>
+        <span className="text-4xl font-bold text-white tracking-tight mb-4 block">Kha<span className="text-white">₹</span>cha</span>
         <p className="text-primary-200/80 max-w-[280px] text-lg font-medium text-balance">
           AI Powered Expense Intelligence Platform
         </p>
@@ -54,10 +54,8 @@ const AuthLayout = ({ children, title, subtitle }) => (
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-500/5 via-transparent to-transparent lg:hidden"></div>
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8 lg:text-left">
-          <div className="lg:hidden w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center shadow-glow-primary">
-            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
+          <div className="lg:hidden text-center mb-6">
+            <span className="text-2xl font-bold text-white tracking-tight">Kha<span className="text-white">₹</span>cha</span>
           </div>
           <h2 className="text-3xl font-bold text-white mb-2">{title}</h2>
           <p className="text-surface-400">{subtitle}</p>

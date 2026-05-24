@@ -33,7 +33,10 @@ const Navbar = ({ onMenuClick }) => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <h1 className="text-xl font-semibold text-white tracking-tight">{getPageTitle()}</h1>
+        <h1 className="text-xl font-semibold text-white tracking-tight hidden lg:block">{getPageTitle()}</h1>
+        <div className="lg:hidden">
+          <span className="text-lg font-bold text-white tracking-tight">Kha<span className="text-white">₹</span>cha</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">

@@ -74,7 +74,7 @@ const Dashboard = () => {
     return (
       <EmptyState
         icon="🚀"
-        title="Welcome to Kharcha!"
+        title={<>Welcome to <span className="font-bold text-white tracking-tight">Kha<span className="text-white">₹</span>cha</span>!</>}
         subtitle="No data yet. Add your first expense to see your analytics dashboard come to life."
         action={
           <Link to="/expenses">
