@@ -1,38 +1,52 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const Button = ({ 
-  children, 
-  variant = 'primary', 
-  size = 'md', 
-  loading = false, 
+const Button = ({
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  disabled = false,
+  icon,
+  iconRight,
   fullWidth = false,
-  className = '', 
-  ...props 
+  onClick,
+  type = 'button',
+  children,
+  className = '',
+  ...props
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface disabled:opacity-50 disabled:cursor-not-allowed';
-  
-  const variantClasses = {
-    primary: 'bg-primary-600 hover:bg-primary-700 text-white focus:ring-primary-500',
-    secondary: 'bg-gray-700 hover:bg-gray-600 text-gray-100 focus:ring-gray-500',
-    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
-  };
-  
-  const sizeClasses = {
-    sm: 'text-sm px-3 py-1.5',
-    md: 'text-sm px-4 py-2',
-    lg: 'text-base px-6 py-3',
-  };
+  const baseClasses = `btn btn-${variant} btn-${size} ${fullWidth ? 'w-full' : ''} ${className}`;
 
-  const widthClass = fullWidth ? 'w-full' : '';
-
-  const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`;
+  const renderContent = () => {
+    if (loading) {
+      return (
+        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      );
+    }
+    
+    return (
+      <>
+        {icon && <span className="flex-shrink-0">{icon}</span>}
+        <span>{children}</span>
+        {iconRight && <span className="flex-shrink-0">{iconRight}</span>}
+      </>
+    );
+  };
 
   return (
-    <button className={classes} disabled={loading || props.disabled} {...props}>
-      {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-      {loading ? 'Loading...' : children}
-    </button>
+    <motion.button
+      type={type}
+      className={baseClasses}
+      onClick={onClick}
+      disabled={disabled || loading}
+      whileTap={{ scale: disabled || loading ? 1 : 0.97 }}
+      {...props}
+    >
+      {renderContent()}
+    </motion.button>
   );
 };
 

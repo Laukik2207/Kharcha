@@ -1,31 +1,54 @@
 import React, { forwardRef } from 'react';
+import { motion } from 'framer-motion';
 
-const Input = forwardRef(({ label, error, rightIcon, className = '', ...props }, ref) => {
+const Input = forwardRef(({
+  label,
+  error,
+  prefix,
+  suffix,
+  className = '',
+  id,
+  ...props
+}, ref) => {
+  const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-sm font-medium text-gray-300 mb-1.5">
+        <label htmlFor={inputId} className="input-label">
           {label}
-          {props.required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      <div className="relative">
+      <div className="relative flex items-center">
+        {prefix && (
+          <div className="absolute left-3 flex items-center justify-center text-surface-400 pointer-events-none">
+            {prefix}
+          </div>
+        )}
         <input
           ref={ref}
-          className={`input-field ${error ? 'border-red-500 focus:ring-red-500' : ''} ${rightIcon ? 'pr-10' : ''}`}
+          id={inputId}
+          className={`input-field ${prefix ? 'pl-9' : ''} ${suffix ? 'pr-12' : ''} ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500/50' : ''}`}
           {...props}
         />
-        {rightIcon && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-            {rightIcon}
+        {suffix && (
+          <div className="absolute right-3 flex items-center justify-center text-surface-400 pointer-events-none">
+            {suffix}
           </div>
         )}
       </div>
-      {error && <p className="mt-1.5 text-sm text-red-500">{error}</p>}
+      {error && (
+        <motion.p
+          className="input-error"
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          {error}
+        </motion.p>
+      )}
     </div>
   );
 });
 
 Input.displayName = 'Input';
-
 export default Input;
