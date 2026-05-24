@@ -1,5 +1,6 @@
 import fs from 'fs';
 import csvParser from 'csv-parser';
+import { Readable } from 'stream';
 
 export const parseCSVFile = (filePath) => {
   return new Promise((resolve, reject) => {
@@ -9,6 +10,17 @@ export const parseCSVFile = (filePath) => {
       .on('data', (data) => results.push(data))
       .on('end', () => resolve(results))
       .on('error', (err) => reject(new Error('Failed to parse CSV file')));
+  });
+};
+
+export const parseCSVFromBuffer = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const results = [];
+    Readable.from(buffer)
+      .pipe(csvParser())
+      .on('data', (data) => results.push(data))
+      .on('end', () => resolve(results))
+      .on('error', (err) => reject(new Error('Failed to parse CSV buffer')));
   });
 };
 

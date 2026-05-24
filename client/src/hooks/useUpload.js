@@ -11,6 +11,8 @@ export const useUpload = () => {
   const [historyLoading, setHistoryLoading] = useState(true);
   const [historyError, setHistoryError] = useState(null);
   
+  const [downloadingId, setDownloadingId] = useState(null);
+
   const pollingIntervalRef = useRef(null);
 
   const fetchHistory = useCallback(async () => {
@@ -100,6 +102,18 @@ export const useUpload = () => {
     }
   };
 
+  const downloadFile = async (statementId, fileName) => {
+    try {
+      setDownloadingId(statementId);
+      await uploadService.downloadFile(statementId, fileName);
+    } catch (err) {
+      console.error('Failed to generate download link', err);
+      // Optional: set some UI error state here if desired
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
   return {
     uploading,
     uploadProgress,
@@ -110,6 +124,8 @@ export const useUpload = () => {
     historyLoading,
     historyError,
     deleteRecord,
+    downloadFile,
+    downloadingId,
     downloadSampleCSV: uploadService.downloadSampleCSV
   };
 };

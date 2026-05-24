@@ -4,19 +4,19 @@ import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import UploadedStatement from '../models/UploadedStatement.js';
 import Expense from '../models/Expense.js';
-import { parseCSVFile, detectCSVFormat, normalizeRows } from '../services/csvParserService.js';
+import { parseCSVFile, parseCSVFromBuffer, detectCSVFormat, normalizeRows } from '../services/csvParserService.js';
 import { categorizeAll, loadUserRules } from '../services/categorizationService.js';
+import { uploadFileToS3, deleteFileFromS3, getSignedDownloadUrl } from '../services/s3Service.js';
 
-export const processStatement = async (statementId, filePath, userId) => {
+export const processStatement = async (statementId, fileBuffer, userId) => {
   try {
-    const rows = await parseCSVFile(filePath);
+    const rows = await parseCSVFromBuffer(fileBuffer);
     
     if (rows.length === 0) {
       await UploadedStatement.findByIdAndUpdate(statementId, {
         status: 'failed',
         errorMessage: 'CSV file is empty or has no data rows'
       });
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       return;
     }
 
@@ -64,10 +64,6 @@ export const processStatement = async (statementId, filePath, userId) => {
       status: 'failed',
       errorMessage: error.message || 'An error occurred during processing'
     });
-  } finally {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
   }
 };
 
@@ -76,11 +72,19 @@ export const uploadStatement = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'No file uploaded');
   }
 
+  let s3Result;
+  try {
+    s3Result = await uploadFileToS3(req.file.buffer, req.file.originalname, req.user._id, req.file.mimetype);
+  } catch (err) {
+    throw new ApiError(500, 'Failed to store file securely. Please try again.');
+  }
+
   const statement = await UploadedStatement.create({
     userId: req.user._id,
     originalFileName: req.file.originalname,
-    storedFileName: req.file.filename,
-    filePath: req.file.path,
+    storedFileName: s3Result.key,
+    filePath: s3Result.location,
+    s3Key: s3Result.key,
     fileSize: req.file.size,
     status: 'processing'
   });
@@ -91,7 +95,7 @@ export const uploadStatement = asyncHandler(async (req, res) => {
   );
 
   // Trigger background processing (do not await)
-  processStatement(statement._id, req.file.path, req.user._id);
+  processStatement(statement._id, req.file.buffer, req.user._id);
 });
 
 export const getUploadHistory = asyncHandler(async (req, res) => {
@@ -129,6 +133,14 @@ export const deleteUploadRecord = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Statement not found');
   }
 
+  if (statement.s3Key) {
+    try {
+      await deleteFileFromS3(statement.s3Key);
+    } catch (err) {
+      console.error('S3 delete failed for key:', statement.s3Key, err.message);
+    }
+  }
+
   let deletedCount = 0;
   if (statement.expenses && statement.expenses.length > 0) {
     const result = await Expense.deleteMany({ _id: { $in: statement.expenses } });
@@ -140,4 +152,28 @@ export const deleteUploadRecord = asyncHandler(async (req, res) => {
   res.status(200).json(
     new ApiResponse(200, { deleted: deletedCount }, 'Upload and its expenses deleted')
   );
+});
+
+export const getSignedUrl = asyncHandler(async (req, res) => {
+  const statement = await UploadedStatement.findOne({ 
+    _id: req.params.id, 
+    userId: req.user._id 
+  });
+
+  if (!statement) {
+    throw new ApiError(404, 'Statement not found');
+  }
+
+  if (!statement.s3Key) {
+    throw new ApiError(400, 'No S3 file associated with this statement');
+  }
+
+  try {
+    const url = await getSignedDownloadUrl(statement.s3Key);
+    res.status(200).json(
+      new ApiResponse(200, { url, expiresIn: 3600 }, 'Signed URL generated')
+    );
+  } catch (err) {
+    throw new ApiError(500, 'Could not generate download link. Please try again.');
+  }
 });

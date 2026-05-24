@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import FilePreviewCard from './FilePreviewCard';
 
-const UploadProgress = ({ uploadResult, uploading, uploadProgress }) => {
+const UploadProgress = ({ uploadResult, uploading, uploadProgress, onDelete, onDownload, downloadingId }) => {
   if (!uploading && !uploadResult) return null;
 
   const isCompleted = uploadResult?.status === 'completed';
@@ -74,6 +75,15 @@ const UploadProgress = ({ uploadResult, uploading, uploadProgress }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {isCompleted && (
+        <FilePreviewCard 
+          statement={uploadResult}
+          onDownload={() => onDownload(uploadResult._id, uploadResult.originalFileName)}
+          onDelete={() => onDelete(uploadResult._id)}
+          downloading={downloadingId === uploadResult._id}
+        />
       )}
 
       {/* Error State */}

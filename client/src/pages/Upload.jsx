@@ -4,6 +4,7 @@ import DropZone from '../components/upload/DropZone';
 import UploadProgress from '../components/upload/UploadProgress';
 import UploadHistory from '../components/upload/UploadHistory';
 import FormatGuide from '../components/upload/FormatGuide';
+import StorageInfoBanner from '../components/upload/StorageInfoBanner';
 
 const Upload = () => {
   const {
@@ -15,6 +16,8 @@ const Upload = () => {
     history,
     historyLoading,
     deleteRecord,
+    downloadFile,
+    downloadingId,
     downloadSampleCSV
   } = useUpload();
 
@@ -63,9 +66,13 @@ const Upload = () => {
         uploadResult={uploadResult} 
         uploading={uploading} 
         uploadProgress={uploadProgress} 
+        onDelete={deleteRecord}
+        onDownload={downloadFile}
+        downloadingId={downloadingId}
       />
 
       {/* Help Guide */}
+      <StorageInfoBanner />
       <FormatGuide onDownloadSample={downloadSampleCSV} />
 
       {/* Historical Uploads */}
@@ -73,6 +80,8 @@ const Upload = () => {
         history={history} 
         loading={historyLoading} 
         onDelete={deleteRecord} 
+        onDownload={downloadFile}
+        downloadingId={downloadingId}
       />
 
     </div>

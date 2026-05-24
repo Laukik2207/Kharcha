@@ -20,6 +20,10 @@ const uploadedStatementSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    s3Key: {
+      type: String,
+      default: ''
+    },
     fileSize: {
       type: Number,
       required: true

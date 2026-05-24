@@ -5,7 +5,8 @@ import {
   uploadStatement, 
   getUploadHistory, 
   getUploadStatus, 
-  deleteUploadRecord 
+  deleteUploadRecord,
+  getSignedUrl
 } from '../controllers/uploadController.js';
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.post('/', uploadSingle, uploadErrorHandler, uploadStatement);
 router.get('/history', getUploadHistory);
 router.get('/status/:id', getUploadStatus);
 router.delete('/:id', deleteUploadRecord);
+router.get('/signed-url/:id', getSignedUrl);
 
 export default router;

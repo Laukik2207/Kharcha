@@ -34,6 +34,21 @@ const uploadService = {
     return response.data.data;
   },
 
+  getSignedUrl: async (statementId) => {
+    const response = await api.get(`/upload/signed-url/${statementId}`);
+    return response.data.data.url;
+  },
+
+  downloadFile: async (statementId, fileName) => {
+    try {
+      const url = await uploadService.getSignedUrl(statementId);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Failed to download file', err);
+      throw err;
+    }
+  },
+
   downloadSampleCSV: () => {
     const csvContent = `date,amount,merchant,category,note,paymentMethod
 2026-05-01,450,Swiggy,Food,Dinner order,UPI
