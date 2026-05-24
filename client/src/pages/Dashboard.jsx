@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useExpenses } from '../hooks/useExpenses';
 import { useAuth } from '../context/AuthContext';
+import { useInsights } from '../hooks/useInsights';
 import MonthYearSelector from '../components/dashboard/MonthYearSelector';
 import StatCard from '../components/dashboard/StatCard';
 import MonthlyLineChart from '../components/charts/MonthlyLineChart';
@@ -14,7 +15,8 @@ import DailyTrendChart from '../components/charts/DailyTrendChart';
 import { formatINR } from '../utils/formatCurrency';
 import { Link } from 'react-router-dom';
 import { getUnknownCount } from '../services/unknownMerchantService';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Sparkles, ArrowRight } from 'lucide-react';
+import MonthlySummaryCard from '../components/insights/MonthlySummaryCard';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -36,6 +38,9 @@ const Dashboard = () => {
 
   // We need the expenses hook just for the recent transactions list
   const { expenses, fetchExpenses, loading: expensesLoading } = useExpenses();
+
+  // Load AI insight summary for the selected month
+  const { summary: aiSummary, loading: aiLoading, error: aiError, refresh: refreshAi } = useInsights();
 
   const [unknownCount, setUnknownCount] = React.useState(0);
 
@@ -159,6 +164,30 @@ const Dashboard = () => {
           loading={analyticsLoading.categories}
           color="orange"
         />
+      </div>
+
+      {/* Row 1.5: AI Quick Insights */}
+      <div className="bg-gradient-to-r from-gray-900 to-gray-900/50 border border-gray-800 rounded-xl p-1 relative overflow-hidden shadow-sm">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800/50 relative z-10">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary-400" />
+            <h3 className="text-sm font-bold text-gray-200">AI Quick Insight</h3>
+          </div>
+          <Link to="/insights" className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1 font-medium transition-colors">
+            Full Analysis <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+        <div className="p-1 relative z-10">
+          <MonthlySummaryCard 
+            data={aiSummary} 
+            loading={aiLoading.summary} 
+            error={aiError.summary}
+            onRefresh={() => refreshAi('summary')}
+            cached={aiSummary?.cached}
+            generatedAt={aiSummary?.generatedAt}
+          />
+        </div>
       </div>
 
       {/* Row 2: Monthly Trend & Category Donut */}

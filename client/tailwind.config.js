@@ -25,6 +25,31 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
+      },
+      animation: {
+        'fade-slide-up': 'fadeSlideUp 0.4s ease forwards',
+        'gradient-text': 'gradientText 4s ease infinite',
+        'fade-in': 'fadeIn 0.3s ease-in-out',
+      },
+      keyframes: {
+        fadeSlideUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        gradientText: {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        }
       }
     },
   },
