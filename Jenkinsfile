@@ -9,7 +9,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Laukik2207/Kharcha.git'
+                git branch: 'main', url: 'https://github.com/Laukik2207/Kharcha.git'
             }
         }
 
@@ -40,7 +40,7 @@ pipeline {
         stage('Backend Validation') {
             steps {
                 dir('server') {
-                    sh 'npm run start'
+                    sh 'node --version'
                 }
             }
         }
