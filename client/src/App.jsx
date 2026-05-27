@@ -6,6 +6,7 @@ import Loader from './components/common/Loader';
 import PageLoader from './components/common/PageLoader';
 
 // Lazy loaded Pages
+const Landing = lazy(() => import('./pages/Landing'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -20,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   
   if (loading) return <Loader />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/landing" replace />;
   
   return children;
 };
@@ -38,6 +39,10 @@ const AppRoutes = () => {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
+        <Route 
+          path="/landing" 
+          element={<PublicRoute><Landing /></PublicRoute>} 
+        />
         <Route 
           path="/login" 
           element={<PublicRoute><Login /></PublicRoute>} 

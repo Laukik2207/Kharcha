@@ -35,7 +35,7 @@ const Navbar = ({ onMenuClick }) => {
         </button>
         <h1 className="text-xl font-semibold text-white tracking-tight hidden lg:block">{getPageTitle()}</h1>
         <div className="lg:hidden">
-          <span className="text-lg font-bold text-white tracking-tight">Kha<span className="text-white">₹</span>cha</span>
+          <span className="text-lg font-bold text-white tracking-tight">KHA<span className="text-white">₹</span>CHA</span>
         </div>
       </div>
 
