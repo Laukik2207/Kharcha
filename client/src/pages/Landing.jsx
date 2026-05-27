@@ -162,19 +162,27 @@ const Landing = () => {
                   <h3 className="font-display text-2xl text-white mb-2">Statement Intelligence</h3>
                   <p className="font-sans text-lg text-surface-300 max-w-sm">Upload any bank statement. Our AI deciphers complex billing and finds hidden subscriptions instantly.</p>
                 </div>
-                <div className="mt-12 relative h-40 mask-fade">
-                  <div className="absolute inset-0 flex flex-col gap-2">
-                    <div className="h-10 w-full bg-white/5 rounded flex items-center px-4 justify-between border-l-2 border-white">
-                      <span className="font-mono text-xs text-surface-300">Cloud Services</span>
-                      <span className="font-mono text-xs text-white">₹499.00</span>
+                <div className="mt-4 relative h-56 mask-fade overflow-hidden">
+                  <div className="absolute inset-0 top-12 w-full">
+                    <div className="statement-item-dynamic h-10 bg-white/5 rounded flex items-center px-4 justify-between">
+                      <span className="font-mono text-xs text-surface-300 truncate mr-4">Cloud Services</span>
+                      <span className="font-mono text-xs text-white whitespace-nowrap">₹499.00</span>
                     </div>
-                    <div className="h-10 w-4/5 bg-white/5 rounded flex items-center px-4 justify-between opacity-60">
-                      <span className="font-mono text-xs text-surface-300">Corporate Travel</span>
-                      <span className="font-mono text-xs text-white">₹1,250.00</span>
+                    <div className="statement-item-dynamic h-10 bg-white/5 rounded flex items-center px-4 justify-between">
+                      <span className="font-mono text-xs text-surface-300 truncate mr-4">Corporate Travel</span>
+                      <span className="font-mono text-xs text-white whitespace-nowrap">₹1,250.00</span>
                     </div>
-                    <div className="h-10 w-3/4 bg-white/5 rounded flex items-center px-4 justify-between opacity-40">
-                      <span className="font-mono text-xs text-surface-300">Executive Dining</span>
-                      <span className="font-mono text-xs text-white">₹320.50</span>
+                    <div className="statement-item-dynamic h-10 bg-white/5 rounded flex items-center px-4 justify-between">
+                      <span className="font-mono text-xs text-surface-300 truncate mr-4">Executive Dining</span>
+                      <span className="font-mono text-xs text-white whitespace-nowrap">₹320.50</span>
+                    </div>
+                    <div className="statement-item-dynamic h-10 bg-white/5 rounded flex items-center px-4 justify-between">
+                      <span className="font-mono text-xs text-surface-300 truncate mr-4">SaaS Subscription</span>
+                      <span className="font-mono text-xs text-white whitespace-nowrap">₹1,499.00</span>
+                    </div>
+                    <div className="statement-item-dynamic h-10 bg-white/5 rounded flex items-center px-4 justify-between">
+                      <span className="font-mono text-xs text-surface-300 truncate mr-4">Hardware Asset</span>
+                      <span className="font-mono text-xs text-white whitespace-nowrap">₹24,000.00</span>
                     </div>
                   </div>
                 </div>
@@ -182,10 +190,55 @@ const Landing = () => {
             </div>
             
             {/* Small Feature 1 */}
-            <div className="md:col-span-4 bg-surface-800 rounded-2xl p-10 border border-white/5 hover:bg-white/5 transition-colors">
-              <span className="material-symbols-outlined text-[40px] text-white mb-6 font-light">cloud_upload</span>
-              <h3 className="font-display text-2xl text-white mb-2">Automatic Categorization</h3>
-              <p className="font-sans text-sm text-surface-300">Zero manual tagging. We learn your spending patterns and categorize every cent with 99.9% accuracy.</p>
+            <div className="md:col-span-4 bg-surface-800 rounded-2xl p-10 border border-white/5 hover:bg-white/5 transition-colors flex flex-col justify-between">
+              <div>
+                <span className="material-symbols-outlined text-[40px] text-white mb-6 font-light">cloud_upload</span>
+                <h3 className="font-display text-2xl text-white mb-2">Automatic Categorization</h3>
+                <p className="font-sans text-sm text-surface-300">Zero manual tagging. We learn your spending patterns and categorize every cent with 99.9% accuracy.</p>
+              </div>
+              
+              <div className="relative h-32 w-full flex items-center justify-center mt-8 border-y border-white/5 bg-black/20 rounded-lg overflow-hidden">
+                <svg className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[80px] overflow-visible">
+                  {/* 5-Pin Manhattan Routing */}
+                  {/* Top Pin */}
+                  <path d="M 0 0 L 120 0 L 120 20" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+                  {/* Top-Left Pin */}
+                  <path d="M 0 20 L 105 20" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+                  {/* Mid-Left Pin */}
+                  <path d="M 0 40 L 100 40" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+                  {/* Bot-Left Pin */}
+                  <path d="M 0 60 L 105 60" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+                  {/* Bot Pin */}
+                  <path d="M 0 80 L 120 80 L 120 60" stroke="rgba(255,255,255,0.05)" strokeWidth="1" fill="none" />
+                  
+                  {/* Single Output */}
+                  <path d="M 140 40 L 240 40" stroke="rgba(255,255,255,0.15)" strokeWidth="1" fill="none" />
+                  
+                  {/* Input Nodes */}
+                  <circle cx="0" cy="0" r="3" fill="rgba(255,255,255,0.15)" />
+                  <circle cx="0" cy="20" r="3" fill="rgba(255,255,255,0.15)" />
+                  <circle cx="0" cy="40" r="3" fill="rgba(255,255,255,0.15)" />
+                  <circle cx="0" cy="60" r="3" fill="rgba(255,255,255,0.15)" />
+                  <circle cx="0" cy="80" r="3" fill="rgba(255,255,255,0.15)" />
+                </svg>
+                
+                <div className="z-10 w-10 h-10 rounded-full bg-surface-800 border border-white/20 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.1)]">
+                  <span className="material-symbols-outlined text-[20px] text-white">memory</span>
+                </div>
+                
+                <div className="absolute top-1/2 left-1/2">
+                  <div className="ai-dot ai-dot-1" style={{'--dot-color': '#3b82f6', animationDelay: '0s'}}></div>
+                  <div className="ai-dot ai-dot-3" style={{'--dot-color': '#ec4899', animationDelay: '-0.4s'}}></div>
+                  <div className="ai-dot ai-dot-5" style={{'--dot-color': '#10b981', animationDelay: '-0.8s'}}></div>
+                  <div className="ai-dot ai-dot-2" style={{'--dot-color': '#f59e0b', animationDelay: '-1.2s'}}></div>
+                  <div className="ai-dot ai-dot-4" style={{'--dot-color': '#8b5cf6', animationDelay: '-1.6s'}}></div>
+                  <div className="ai-dot ai-dot-1" style={{'--dot-color': '#06b6d4', animationDelay: '-2.0s'}}></div>
+                  <div className="ai-dot ai-dot-3" style={{'--dot-color': '#ef4444', animationDelay: '-2.4s'}}></div>
+                  <div className="ai-dot ai-dot-5" style={{'--dot-color': '#84cc16', animationDelay: '-2.8s'}}></div>
+                  <div className="ai-dot ai-dot-2" style={{'--dot-color': '#6366f1', animationDelay: '-3.2s'}}></div>
+                  <div className="ai-dot ai-dot-4" style={{'--dot-color': '#f43f5e', animationDelay: '-3.6s'}}></div>
+                </div>
+              </div>
             </div>
             
             {/* Small Feature 2 */}
