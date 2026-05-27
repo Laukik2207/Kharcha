@@ -1,13 +1,9 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import ApiError from '../utils/ApiError.js';
 
 // Verify API key is available
-if (!process.env.GEMINI_API_KEY) {
-  console.warn('GEMINI_API_KEY is not defined in the environment variables.');
+if (!process.env.OPENROUTER_API_KEY) {
+  console.warn('OPENROUTER_API_KEY is not defined in the environment variables.');
 }
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
 export const PROMPT_TEMPLATES = {
   monthlySummary: (context) => `
@@ -215,33 +211,50 @@ export const buildFinancialContext = (expenseData) => {
   return context;
 };
 
-const callGemini = async (prompt, options = {}) => {
+const callOpenRouter = async (prompt, options = {}) => {
   const { maxRetries = 3, retryDelay = 2000, maxOutputTokens = 2048 } = options;
   let attempt = 0;
-  let currentPrompt = prompt;
 
   while (attempt <= maxRetries) {
     try {
-      const response = await model.generateContent({
-        contents: [{ role: 'user', parts: [{ text: currentPrompt }] }],
-        generationConfig: { 
-          maxOutputTokens,
-          responseMimeType: 'application/json' 
-        }
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "model": "google/gemini-2.5-flash",
+          "messages": [
+            { "role": "user", "content": prompt }
+          ],
+          "response_format": { "type": "json_object" },
+          "max_tokens": maxOutputTokens
+        })
       });
-      return response.response.text();
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        const err = new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+        err.status = response.status;
+        err.details = errorText;
+        throw err;
+      }
+
+      const data = await response.json();
+      return data.choices[0].message.content;
     } catch (error) {
-      if ((error.status === 429 || error.status >= 500) && attempt < maxRetries) {
+      if ((error.status === 429 || error.status >= 500 || error.cause) && attempt < maxRetries) {
         attempt++;
         const delay = retryDelay * Math.pow(2, attempt);
-        console.warn(`Gemini API error (${error.status}). Retrying in ${delay}ms... (Attempt ${attempt}/${maxRetries})`);
+        console.warn(`OpenRouter API error. Retrying in ${delay}ms... (Attempt ${attempt}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, delay));
       } else {
         throw error;
       }
     }
   }
-  throw new Error('Gemini API unavailable after retries');
+  throw new Error('OpenRouter API unavailable after retries');
 };
 
 const cleanJsonResponse = (text) => {
@@ -271,13 +284,13 @@ export const generateInsight = async (type, expenseData, extra = {}) => {
 
     let responseText;
     try {
-      responseText = await callGemini(prompt);
+      responseText = await callOpenRouter(prompt);
       return JSON.parse(cleanJsonResponse(responseText));
     } catch (error) {
       if (error instanceof SyntaxError) {
-        console.warn('Failed to parse Gemini response as JSON. Retrying once with explicit JSON instruction...');
+        console.warn('Failed to parse OpenRouter response as JSON. Retrying once with explicit JSON instruction...');
         const retryPrompt = prompt + `\n\nCRITICAL: Return ONLY valid JSON. Do not wrap it in markdown code blocks (\`\`\`). No text before or after.`;
-        responseText = await callGemini(retryPrompt, { maxRetries: 1 });
+        responseText = await callOpenRouter(retryPrompt, { maxRetries: 1 });
         return JSON.parse(cleanJsonResponse(responseText));
       }
       throw error;
