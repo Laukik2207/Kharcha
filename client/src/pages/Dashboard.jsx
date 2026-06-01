@@ -4,7 +4,7 @@ import { useAnalytics } from '../hooks/useAnalytics';
 import { useExpenses } from '../hooks/useExpenses';
 import { useAuth } from '../context/AuthContext';
 import { useInsights } from '../hooks/useInsights';
-import MonthYearSelector from '../components/dashboard/MonthYearSelector';
+import MultiDateFilter from '../components/dashboard/MultiDateFilter';
 import MonthlyLineChart from '../components/charts/MonthlyLineChart';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
@@ -37,10 +37,11 @@ const Dashboard = () => {
     categorySummary,
     yearlySummary,
     loading: analyticsLoading,
-    selectedMonth,
-    selectedYear,
-    setSelectedMonth,
-    setSelectedYear
+    selectedMonths,
+    selectedYears,
+    setSelectedMonths,
+    setSelectedYears,
+    availableDates
   } = useAnalytics();
 
   const { expenses, fetchExpenses, loading: expensesLoading } = useExpenses();
@@ -115,11 +116,14 @@ const Dashboard = () => {
             Welcome back, {user?.name?.split(' ')[0] || 'User'}
           </p>
         </div>
-        <MonthYearSelector 
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          onMonthChange={setSelectedMonth}
-          onYearChange={setSelectedYear}
+        <MultiDateFilter 
+          availableDates={availableDates}
+          selectedYears={selectedYears}
+          selectedMonths={selectedMonths}
+          onChange={(years, months) => {
+            setSelectedYears(years);
+            setSelectedMonths(months);
+          }}
         />
       </motion.div>
 

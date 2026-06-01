@@ -8,6 +8,7 @@ export const useAnalytics = () => {
   const [dailyTrend, setDailyTrend] = useState(null);
   const [topMerchants, setTopMerchants] = useState(null);
   const [paymentMethods, setPaymentMethods] = useState(null);
+  const [availableDates, setAvailableDates] = useState([]);
 
   const [loading, setLoading] = useState({
     monthly: false,
@@ -15,19 +16,36 @@ export const useAnalytics = () => {
     yearly: false,
     daily: false,
     merchants: false,
-    payments: false
+    payments: false,
+    dates: false
   });
 
   const [error, setError] = useState(null);
 
   const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  const [selectedYears, setSelectedYears] = useState([currentDate.getFullYear()]);
+  const [selectedMonths, setSelectedMonths] = useState([]); // Empty means ALL months available
+
+  const fetchAvailableDates = async () => {
+    setLoading(p => ({ ...p, dates: true }));
+    try {
+      const data = await analyticsService.getAvailableDates();
+      setAvailableDates(data || []);
+      // Auto-select the most recent year if nothing is set
+      if (data && data.length > 0 && selectedYears.length === 0) {
+        setSelectedYears([data[0].year]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(p => ({ ...p, dates: false }));
+    }
+  };
 
   const fetchMonthly = async () => {
     setLoading(p => ({ ...p, monthly: true }));
     try {
-      const data = await analyticsService.getMonthlySummary(selectedYear);
+      const data = await analyticsService.getMonthlySummary(selectedYears, selectedMonths);
       setMonthlySummary(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch monthly summary');
@@ -39,7 +57,7 @@ export const useAnalytics = () => {
   const fetchCategories = async () => {
     setLoading(p => ({ ...p, categories: true }));
     try {
-      const data = await analyticsService.getCategorySummary(selectedMonth, selectedYear);
+      const data = await analyticsService.getCategorySummary(selectedYears, selectedMonths);
       setCategorySummary(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch category summary');
@@ -51,7 +69,7 @@ export const useAnalytics = () => {
   const fetchYearly = async () => {
     setLoading(p => ({ ...p, yearly: true }));
     try {
-      const data = await analyticsService.getYearlySummary();
+      const data = await analyticsService.getYearlySummary(selectedYears, selectedMonths);
       setYearlySummary(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch yearly summary');
@@ -63,7 +81,7 @@ export const useAnalytics = () => {
   const fetchDaily = async () => {
     setLoading(p => ({ ...p, daily: true }));
     try {
-      const data = await analyticsService.getDailyTrend(selectedMonth, selectedYear);
+      const data = await analyticsService.getDailyTrend(selectedYears, selectedMonths);
       setDailyTrend(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch daily trend');
@@ -75,7 +93,7 @@ export const useAnalytics = () => {
   const fetchMerchants = async () => {
     setLoading(p => ({ ...p, merchants: true }));
     try {
-      const data = await analyticsService.getTopMerchants(selectedMonth, selectedYear, 5);
+      const data = await analyticsService.getTopMerchants(selectedYears, selectedMonths, 5);
       setTopMerchants(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch top merchants');
@@ -87,7 +105,7 @@ export const useAnalytics = () => {
   const fetchPayments = async () => {
     setLoading(p => ({ ...p, payments: true }));
     try {
-      const data = await analyticsService.getPaymentMethodBreakdown(selectedMonth, selectedYear);
+      const data = await analyticsService.getPaymentMethodBreakdown(selectedYears, selectedMonths);
       setPaymentMethods(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch payment methods');
@@ -106,7 +124,11 @@ export const useAnalytics = () => {
       fetchMerchants(),
       fetchPayments()
     ]);
-  }, [selectedMonth, selectedYear]);
+  }, [selectedYears, selectedMonths]);
+
+  useEffect(() => {
+    fetchAvailableDates();
+  }, []);
 
   useEffect(() => {
     fetchAll();
@@ -119,12 +141,13 @@ export const useAnalytics = () => {
     dailyTrend,
     topMerchants,
     paymentMethods,
+    availableDates,
     loading,
     error,
-    selectedMonth,
-    selectedYear,
-    setSelectedMonth,
-    setSelectedYear,
+    selectedYears,
+    selectedMonths,
+    setSelectedYears,
+    setSelectedMonths,
     refetch: fetchAll
   };
 };

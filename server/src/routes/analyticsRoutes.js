@@ -6,13 +6,15 @@ import {
   getYearlySummary,
   getDailyTrend,
   getTopMerchants,
-  getPaymentMethodBreakdown
+  getPaymentMethodBreakdown,
+  getAvailableDates
 } from '../controllers/analyticsController.js';
 
 const router = express.Router();
 
 router.use(protect);
 
+router.get('/available-dates', getAvailableDates);
 router.get('/monthly', getMonthlySummary);
 router.get('/categories', getCategorySummary);
 router.get('/yearly', getYearlySummary);
