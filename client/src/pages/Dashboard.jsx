@@ -12,7 +12,6 @@ import IntelligentInsights from '../components/dashboard/IntelligentInsights';
 import { formatINR } from '../utils/formatCurrency';
 import { Link } from 'react-router-dom';
 import { getUnknownCount } from '../services/unknownMerchantService';
-import { AlertTriangle, TrendingUp, TrendingDown, Sparkles, ArrowRight } from 'lucide-react';
 import EmptyState from '../components/common/EmptyState';
 import Button from '../components/common/Button';
 
@@ -76,7 +75,6 @@ const Dashboard = () => {
     return Math.min(Math.round((total / budget) * 100), 100);
   }, [yearlySummary]);
 
-  // AI Recommendation text extraction
   const getAiRecommendation = () => {
     if (aiLoading.summary) return "Analyzing your recent spending patterns...";
     if (aiError.summary) return "Unable to generate insights at the moment.";
@@ -103,37 +101,18 @@ const Dashboard = () => {
 
   return (
     <motion.div 
-      className="max-w-[1440px] mx-auto pb-8"
+      className="max-w-container-max mx-auto pb-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
-      {/* Header Area */}
-      <motion.div variants={itemVariants} className="page-header mb-8">
-        <div>
-          <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">
-            Welcome back, {user?.name?.split(' ')[0] || 'User'}
-          </p>
-        </div>
-        <MultiDateFilter 
-          availableDates={availableDates}
-          selectedYears={selectedYears}
-          selectedMonths={selectedMonths}
-          onChange={(years, months) => {
-            setSelectedYears(years);
-            setSelectedMonths(months);
-          }}
-        />
-      </motion.div>
-
       {/* Action Required Alert */}
       {unknownCount > 0 && (
-        <motion.div variants={itemVariants} className="mb-6">
+        <motion.div variants={itemVariants} className="mb-stack-lg">
           <div className="bg-amber-900/20 border border-amber-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded bg-amber-500/10 flex items-center justify-center text-amber-400 shrink-0">
-                <AlertTriangle className="w-5 h-5" />
+                <span className="material-symbols-outlined text-[20px]">warning</span>
               </div>
               <div>
                 <h3 className="text-amber-400 font-semibold text-sm">Action Required</h3>
@@ -152,23 +131,22 @@ const Dashboard = () => {
       )}
 
       {/* Top Row: Metrics */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-stack-lg mb-stack-lg">
         {/* Total Spend */}
-        <div className="card relative overflow-hidden group">
-          <p className="font-mono text-xs text-surface-400 mb-2 uppercase tracking-widest">TOTAL SPEND</p>
-          <h2 className="font-display text-4xl font-bold text-white mb-4">
+        <div className="premium-card p-stack-lg rounded-xl relative overflow-hidden group">
+          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">TOTAL SPEND</p>
+          <h2 className="font-display-lg text-display-lg text-[32px] font-bold mb-4">
             {analyticsLoading.yearly ? '...' : formatINR(yearlySummary?.currentMonth?.total || 0)}
           </h2>
           
           {yearlySummary?.momGrowth !== undefined && (
-            <div className={`flex items-center gap-2 text-sm w-fit px-2 py-0.5 rounded font-mono ${yearlySummary.momGrowth >= 0 ? 'text-red-400 bg-red-900/30' : 'text-green-400 bg-green-900/30'}`}>
-              {yearlySummary.momGrowth >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+            <div className={`flex items-center gap-2 text-body-sm w-fit px-2 py-0.5 rounded ${yearlySummary.momGrowth >= 0 ? 'text-on-error bg-error/10' : 'text-green-400 bg-green-900/30'}`}>
+              <span className="material-symbols-outlined text-sm">{yearlySummary.momGrowth >= 0 ? 'trending_up' : 'trending_down'}</span>
               <span>{Math.abs(yearlySummary.momGrowth).toFixed(1)}% vs last month</span>
             </div>
           )}
 
-          {/* Sparkline Placeholder */}
-          <div className="absolute bottom-0 left-0 right-0 h-12 opacity-20 pointer-events-none">
+          <div className="absolute bottom-0 left-0 right-0 h-12 opacity-20 pointer-events-none chart-mask">
             <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
               <path d="M0 20 Q 25 5, 50 15 T 100 10" fill="none" stroke="white" strokeWidth="2"></path>
             </svg>
@@ -176,27 +154,25 @@ const Dashboard = () => {
         </div>
 
         {/* AI Savings Tip */}
-        <div className="glass-card relative border-white/20 bg-gradient-to-br from-white/5 to-transparent p-6 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="text-white w-4 h-4" />
-              <p className="font-mono text-xs text-white uppercase tracking-widest">AI RECOMMENDATION</p>
-            </div>
-            <p className="font-body text-base text-white leading-tight font-medium line-clamp-3">
-              {getAiRecommendation()}
-            </p>
+        <div className="glass-panel p-stack-lg rounded-xl relative border-primary/20 bg-gradient-to-br from-white/5 to-transparent">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+            <p className="font-label-mono text-[12px] text-primary">AI RECOMMENDATION</p>
           </div>
-          <Link to="/insights" className="mt-4 text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all text-white w-fit">
-            View Details <ArrowRight className="w-4 h-4" />
+          <p className="font-body-lg text-primary leading-tight font-medium">
+            {getAiRecommendation()}
+          </p>
+          <Link to="/insights" className="mt-4 text-body-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
+            View Details <span className="material-symbols-outlined text-sm">arrow_forward</span>
           </Link>
         </div>
 
         {/* Burn Rate */}
-        <div className="card">
-          <p className="font-mono text-xs text-surface-400 mb-2 uppercase tracking-widest">BURN RATE</p>
-          <h2 className="font-display text-4xl font-bold text-white mb-4">
+        <div className="premium-card p-stack-lg rounded-xl">
+          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">BURN RATE</p>
+          <h2 className="font-display-lg text-display-lg text-[32px] font-bold mb-4">
             {analyticsLoading.yearly ? '...' : formatINR(burnRate)}
-            <span className="text-lg opacity-40 font-body font-normal">/day</span>
+            <span className="text-body-lg opacity-40">/day</span>
           </h2>
           <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
             <div 
@@ -204,17 +180,26 @@ const Dashboard = () => {
               style={{ width: `${budgetExhausted}%` }}
             ></div>
           </div>
-          <p className="text-sm opacity-40 mt-3 font-mono">{budgetExhausted}% of monthly budget exhausted</p>
+          <p className="text-body-sm opacity-40 mt-2">{budgetExhausted}% of monthly budget exhausted</p>
         </div>
       </motion.div>
 
       {/* Middle Row: Spending Intelligence & Category Breakdown */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-        <div className="xl:col-span-2 card p-0 flex flex-col overflow-hidden min-h-[400px]">
-          <div className="flex justify-between items-center p-6 pb-2">
-            <h3 className="font-display text-2xl font-medium text-white">Spending Intelligence</h3>
+      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-stack-lg mb-stack-lg">
+        <div className="xl:col-span-2 premium-card p-stack-lg rounded-xl flex flex-col min-h-[400px]">
+          <div className="flex justify-between items-start lg:items-center mb-stack-lg flex-col lg:flex-row gap-4">
+            <h3 className="font-headline-md text-headline-md">Spending Intelligence</h3>
+            <MultiDateFilter 
+              availableDates={availableDates}
+              selectedYears={selectedYears}
+              selectedMonths={selectedMonths}
+              onChange={(years, months) => {
+                setSelectedYears(years);
+                setSelectedMonths(months);
+              }}
+            />
           </div>
-          <div className="flex-1 w-full relative">
+          <div className="flex-1 w-full relative h-64">
             <MonthlyLineChart 
               data={monthlySummary?.monthly} 
               loading={analyticsLoading.monthly} 
@@ -222,9 +207,10 @@ const Dashboard = () => {
             />
           </div>
         </div>
-        <div className="card flex flex-col min-h-[400px]">
-          <h3 className="font-display text-2xl font-medium text-white mb-6">Categories</h3>
-          <div className="flex-1 w-full relative">
+        
+        <div className="premium-card p-stack-lg rounded-xl flex flex-col min-h-[400px]">
+          <h3 className="font-headline-md text-headline-md mb-stack-lg">Categories</h3>
+          <div className="flex-1 w-full relative flex items-center justify-center">
             <CategoryPieChart 
               data={categorySummary?.byCategory} 
               loading={analyticsLoading.categories} 
@@ -234,22 +220,23 @@ const Dashboard = () => {
       </motion.div>
 
       {/* Bottom Row: Transactions & Insights */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 card p-0 overflow-hidden">
-          <div className="p-6 flex justify-between items-center border-b border-white/5">
-            <h3 className="font-display text-2xl font-medium text-white">Recent Transactions</h3>
-            <Link to="/expenses" className="text-white text-sm opacity-60 hover:opacity-100 transition-opacity">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-stack-lg">
+        <div className="xl:col-span-2 premium-card rounded-xl overflow-hidden flex flex-col">
+          <div className="p-stack-lg flex justify-between items-center border-b border-white/5">
+            <h3 className="font-headline-md text-headline-md">Recent Transactions</h3>
+            <Link to="/expenses" className="text-primary text-body-sm opacity-60 hover:opacity-100 transition-opacity">
               View All
             </Link>
           </div>
-          <div className="w-full overflow-x-auto">
+          <div className="w-full overflow-x-auto flex-1">
             <RecentTransactions 
               expenses={expenses.slice(0, 5)} 
               loading={expensesLoading} 
             />
           </div>
         </div>
-        <div className="glass-card p-6 h-fit">
+        
+        <div className="glass-panel p-stack-lg rounded-xl h-fit">
           <IntelligentInsights 
             data={aiSummary} 
             loading={aiLoading.summary} 
@@ -263,4 +250,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

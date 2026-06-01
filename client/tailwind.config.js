@@ -13,19 +13,74 @@ export default {
           fixed: '#e2e2e2',
           'fixed-dim': '#c6c6c7',
         },
+        secondary: {
+          DEFAULT: '#c8c6c5',
+          container: '#474746',
+          fixed: '#e5e2e1',
+          'fixed-dim': '#c8c6c5',
+        },
+        tertiary: {
+          DEFAULT: '#ffffff',
+          container: '#e5e2e1',
+          fixed: '#e5e2e1',
+          'fixed-dim': '#c9c6c5',
+        },
         surface: {
+          DEFAULT: '#121414',
           50: '#e3e2e2',
           100: '#c4c7c8',
           200: '#8e9192',
           300: '#444748',
-          400: '#383939', /* surface-bright */
-          500: '#343535', /* surface-container-highest */
-          600: '#292a2a', /* surface-container-high */
-          700: '#1f2020', /* surface-container */
-          800: '#1b1c1c', /* surface-container-low */
-          900: '#121414', /* surface / background */
-          950: '#0d0e0f', /* surface-container-lowest */
+          400: '#383939', 
+          500: '#343535', 
+          600: '#292a2a', 
+          700: '#1f2020', 
+          800: '#1b1c1c', 
+          900: '#121414', 
+          950: '#0d0e0f', 
           black: '#000000',
+          bright: '#383939',
+          variant: '#343535',
+          dim: '#121414',
+          tint: '#c6c6c7',
+          container: '#1f2020',
+          'container-lowest': '#0d0e0f',
+          'container-low': '#1b1c1c',
+          'container-high': '#292a2a',
+          'container-highest': '#343535',
+        },
+        error: {
+          DEFAULT: '#ffb4ab',
+          container: '#93000a',
+        },
+        on: {
+          background: '#e3e2e2',
+          surface: '#e3e2e2',
+          'surface-variant': '#c4c7c8',
+          primary: '#2f3131',
+          'primary-container': '#636565',
+          'primary-fixed': '#1a1c1c',
+          'primary-fixed-variant': '#454747',
+          secondary: '#313030',
+          'secondary-container': '#b7b5b4',
+          'secondary-fixed': '#1c1b1b',
+          'secondary-fixed-variant': '#474746',
+          tertiary: '#313030',
+          'tertiary-container': '#656464',
+          'tertiary-fixed': '#1c1b1b',
+          'tertiary-fixed-variant': '#474646',
+          error: '#690005',
+          'error-container': '#ffdad6',
+        },
+        inverse: {
+          surface: '#e3e2e2',
+          'on-surface': '#303031',
+          primary: '#5d5f5f',
+        },
+        background: '#121414',
+        outline: {
+          DEFAULT: '#8e9192',
+          variant: '#444748',
         },
         glass: {
           light: 'rgba(255,255,255,0.03)',
@@ -71,15 +126,39 @@ export default {
         'card-hover': '0 24px 48px rgba(0,0,0,0.5)',
       },
       borderRadius: {
-        'xl': '0.75rem', /* 12px for interactive elements */
+        'xl': '0.75rem',
         '2xl': '1rem', 
-        '3xl': '1.5rem', /* 24px for primary containers */
+        '3xl': '1.5rem',
         '4xl': '2rem',
+      },
+      spacing: {
+        "section-gap": "80px",
+        "edge-margin": "40px",
+        "edge-margin-mobile": "20px",
+        "stack-lg": "24px",
+        "stack-xs": "4px",
+        "container-max": "1440px",
+        "stack-md": "16px",
+        "stack-sm": "8px",
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Hanken Grotesk', 'sans-serif'],
         mono: ['Geist', 'monospace'],
+        "display-lg-mobile": ["Hanken Grotesk"],
+        "label-mono": ["Geist", "monospace"],
+        "display-lg": ["Hanken Grotesk"],
+        "body-lg": ["Inter", "sans-serif"],
+        "headline-md": ["Hanken Grotesk"],
+        "body-sm": ["Inter", "sans-serif"],
+      },
+      fontSize: {
+        "display-lg-mobile": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.03em", "fontWeight": "600"}],
+        "label-mono": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500"}],
+        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "600"}],
+        "body-lg": ["16px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+        "headline-md": ["24px", {"lineHeight": "1.3", "letterSpacing": "-0.02em", "fontWeight": "500"}],
+        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}]
       },
     },
   },
