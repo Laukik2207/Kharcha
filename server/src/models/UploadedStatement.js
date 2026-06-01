@@ -30,7 +30,7 @@ const uploadedStatementSchema = new mongoose.Schema(
     },
     format: {
       type: String,
-      enum: ['kharcha', 'hdfc', 'sbi', 'icici', 'upi', 'unknown'],
+      enum: ['kharcha', 'hdfc', 'sbi', 'icici', 'upi', 'real_bank', 'unknown'],
       default: 'unknown'
     },
     status: {

@@ -24,6 +24,148 @@ export const parseCSVFromBuffer = (buffer) => {
   });
 };
 
+export function detectFileType(rawContent) {
+  // Check if this is a real bank statement with blank header rows
+  if (
+    rawContent.includes('Statement From') ||
+    (rawContent.includes('Date') && rawContent.includes('Details') &&
+     rawContent.includes('Debit') && rawContent.includes('Credit') &&
+     rawContent.includes('Balance') && rawContent.includes('UPI'))
+  ) {
+    return 'real_bank_statement';
+  }
+  return 'standard_csv';
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i+1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result.map(s => s.trim());
+}
+
+function parseTransactionRow(rawRow) {
+  const columns = parseCSVLine(rawRow);
+  if (columns.length < 5) return null;
+
+  const rawDate = columns[0];
+  const dateMatch = rawDate.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (!dateMatch) return null;
+
+  const [_, day, month, year] = dateMatch;
+  const date = new Date(`${year}-${month}-${day}`);
+  if (isNaN(date.getTime())) return null;
+
+  const details = columns[1].replace(/\s+/g, ' ');
+
+  // Skip credits
+  if (details.includes('DEP TFR') || details.includes('CSH DEP') || details.includes('UPI/CR')) return null; 
+
+  const debitStr = columns[3].replace(/,/g, '');
+  if (!debitStr) return null;
+
+  const amount = parseFloat(debitStr);
+  if (isNaN(amount) || amount <= 0) return null;
+
+  let merchant = 'Unknown';
+  let paymentMethod = 'UPI';
+  let refNo = columns[2] || '';
+
+  const upiMatch = details.match(/UPI\/DR\/(\d+)\/([^\/]+)\//) || details.match(/UPI\/DR\/(\d+)\/([^\/]+)/);
+  if (upiMatch) {
+    refNo = refNo || upiMatch[1];
+    merchant = upiMatch[2].trim();
+    paymentMethod = 'UPI';
+  } else if (details.includes('NEFT')) {
+    const neftMatch = details.match(/NEFT\*[^*]+\*[^*]+\*(.+?)(?:\s{2,}|$)/);
+    merchant = neftMatch ? neftMatch[1].trim() : 'NEFT Transfer';
+    paymentMethod = 'Net Banking';
+  } else if (details.includes('CDM CHARGE')) {
+    merchant = 'Bank Charge';
+    paymentMethod = 'Other';
+  } else if (details.includes('ATM')) {
+    merchant = 'ATM Withdrawal';
+    paymentMethod = 'Cash';
+  } else {
+    const words = details.replace(/[^a-zA-Z\s]/g, ' ').trim().split(/\s+/);
+    merchant = words.slice(0, 3).join(' ');
+  }
+
+  const note = details.substring(0, 100).trim();
+
+  return {
+    date,
+    amount,
+    merchant,
+    note,
+    paymentMethod,
+    refNo,
+    rawDetails: details,
+  };
+}
+
+export async function parseRealBankStatement(filePathOrBuffer) {
+  const content = Buffer.isBuffer(filePathOrBuffer) ? filePathOrBuffer.toString('utf8') : fs.readFileSync(filePathOrBuffer, 'utf8');
+  const lines = content.split('\n');
+
+  let headerRowIndex = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes('Date') && lines[i].includes('Details') && lines[i].includes('Debit')) {
+      headerRowIndex = i;
+      break;
+    }
+  }
+  if (headerRowIndex === -1) throw new Error('Could not find header row in bank statement');
+
+  let footerRowIndex = lines.length;
+  for (let i = headerRowIndex + 1; i < lines.length; i++) {
+    if (lines[i].includes('Statement Summary') || lines[i].includes('Brought Forward')) {
+      footerRowIndex = i;
+      break;
+    }
+  }
+
+  const transactionLines = lines.slice(headerRowIndex + 1, footerRowIndex);
+  const mergedRows = [];
+  const datePattern = /^\d{2}\/\d{2}\/\d{4}/;
+
+  for (let i = 0; i < transactionLines.length; i++) {
+    const line = transactionLines[i].trim();
+    if (!line || line.replace(/,/g, '').trim() === '') continue;
+
+    if (datePattern.test(line)) {
+      let fullRow = line;
+      if (i + 1 < transactionLines.length) {
+        const nextLine = transactionLines[i + 1].trim();
+        if (nextLine && !datePattern.test(nextLine) && nextLine.replace(/,/g, '').trim() !== '') {
+          fullRow = line + ' ' + nextLine;
+          i++; 
+        }
+      }
+      mergedRows.push(fullRow);
+    }
+  }
+
+  return mergedRows.map(row => parseTransactionRow(row)).filter(Boolean);
+}
+
 export const detectCSVFormat = (headers) => {
   if (!headers || headers.length === 0) return 'unknown';
 
@@ -47,6 +189,10 @@ export const detectCSVFormat = (headers) => {
 
   if (headerStr.includes('date') && headerStr.includes('description') && headerStr.includes('amount') && headerStr.includes('type')) {
     return 'upi';
+  }
+
+  if (headerStr.includes('date') && headerStr.includes('details') && headerStr.includes('debit') && headerStr.includes('credit') && headerStr.includes('balance')) {
+    return 'sbi_upi';
   }
 
   return 'unknown';
@@ -87,6 +233,9 @@ export const normalizeRows = (rows, format) => {
     let skip = false;
 
     switch (format) {
+      case 'sbi_upi':
+        return rows; // already normalized by parseRealBankStatement
+
       case 'kharcha':
         dateStr = row.date;
         amountStr = row.amount;

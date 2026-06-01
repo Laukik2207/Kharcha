@@ -4,25 +4,44 @@ import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import UploadedStatement from '../models/UploadedStatement.js';
 import Expense from '../models/Expense.js';
-import { parseCSVFile, parseCSVFromBuffer, detectCSVFormat, normalizeRows } from '../services/csvParserService.js';
+import { parseCSVFile, parseCSVFromBuffer, detectCSVFormat, normalizeRows, detectFileType, parseRealBankStatement } from '../services/csvParserService.js';
 import { categorizeAll, loadUserRules } from '../services/categorizationService.js';
 import { uploadFileToS3, deleteFileFromS3, getSignedDownloadUrl } from '../services/s3Service.js';
 
 export const processStatement = async (statementId, fileBuffer, userId) => {
   try {
-    const rows = await parseCSVFromBuffer(fileBuffer);
-    
-    if (rows.length === 0) {
+    const rawContent = fileBuffer.toString('utf8');
+    const fileType = detectFileType(rawContent);
+
+    let rows;
+    let format;
+    let normalizedRows;
+
+    if (fileType === 'real_bank_statement') {
+      rows = await parseRealBankStatement(fileBuffer);
+      format = 'real_bank';
+      normalizedRows = rows; // Already normalized
+    } else {
+      rows = await parseCSVFromBuffer(fileBuffer);
+      if (rows.length === 0) {
+        await UploadedStatement.findByIdAndUpdate(statementId, {
+          status: 'failed',
+          errorMessage: 'CSV file is empty or has no data rows'
+        });
+        return;
+      }
+      const headers = Object.keys(rows[0]);
+      format = detectCSVFormat(headers);
+      normalizedRows = normalizeRows(rows, format);
+    }
+
+    if (normalizedRows.length === 0) {
       await UploadedStatement.findByIdAndUpdate(statementId, {
         status: 'failed',
-        errorMessage: 'CSV file is empty or has no data rows'
+        errorMessage: 'No valid transactions found in the file'
       });
       return;
     }
-
-    const headers = Object.keys(rows[0]);
-    const format = detectCSVFormat(headers);
-    const normalizedRows = normalizeRows(rows, format);
     
     // Load custom user rules before categorizing
     const userRules = await loadUserRules(userId);
