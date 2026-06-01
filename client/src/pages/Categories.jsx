@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useCategories } from '../hooks/useCategories';
-import CategoryBadge, { CATEGORY_ICONS, CATEGORY_COLORS } from '../components/categories/CategoryBadge';
+import CategoryBadge, { CATEGORY_COLORS } from '../components/categories/CategoryBadge';
 import UserRulesTable from '../components/categories/UserRulesTable';
 import RuleFormModal from '../components/categories/RuleFormModal';
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useUnknownMerchants } from '../hooks/useUnknownMerchants';
 import UnknownMerchantList from '../components/unknownMerchants/UnknownMerchantList';
 import BulkAssignModal from '../components/unknownMerchants/BulkAssignModal';
-import { CheckCircle2, AlertTriangle, ListChecks } from 'lucide-react';
+import { CheckCircle2, ListChecks } from 'lucide-react';
 
 const UnknownMerchants = () => {
   const { unknownMerchants, loading, totalCount, assigning, assign, assignAll, dismiss } = useUnknownMerchants();

@@ -8,7 +8,7 @@ import SavingsCard from '../components/insights/SavingsCard';
 import AnomalyCard from '../components/insights/AnomalyCard';
 import PatternCard from '../components/insights/PatternCard';
 import BudgetAdvisorCard from '../components/insights/BudgetAdvisorCard';
-import { ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { ChevronDown, RefreshCw } from 'lucide-react';
 import Button from '../components/common/Button';
 
 const containerVariants = {

@@ -1,6 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as expenseService from '../services/expenseService';
 
+const defaultFilters = {
+  search: '',
+  category: '',
+  paymentMethod: '',
+  startDate: '',
+  endDate: '',
+  sortBy: 'date',
+  sortOrder: 'desc',
+  page: 1,
+  limit: 20
+};
+
 export const useExpenses = () => {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,18 +21,6 @@ export const useExpenses = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const defaultFilters = {
-    search: '',
-    category: '',
-    paymentMethod: '',
-    startDate: '',
-    endDate: '',
-    sortBy: 'date',
-    sortOrder: 'desc',
-    page: 1,
-    limit: 20
-  };
 
   const [filters, setFilters] = useState(defaultFilters);
 

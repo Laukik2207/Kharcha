@@ -36,7 +36,6 @@ const Dashboard = () => {
     monthlySummary,
     categorySummary,
     yearlySummary,
-    dailyTrend,
     loading: analyticsLoading,
     selectedMonth,
     selectedYear,
