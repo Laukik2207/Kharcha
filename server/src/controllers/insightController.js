@@ -3,7 +3,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import AIInsight from '../models/AIInsight.js';
 import Expense from '../models/Expense.js';
-import { generateInsight } from '../services/geminiService.js';
+import { generateInsight } from '../services/aiInsightService.js';
 
 const buildExpenseData = async (userId, month, year) => {
   const start = new Date(year, month - 1, 1);
