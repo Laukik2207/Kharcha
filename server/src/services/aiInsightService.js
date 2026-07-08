@@ -5,6 +5,12 @@ if (!process.env.GROQ_API_KEY) {
   console.warn('GROQ_API_KEY is not defined in the environment variables.');
 }
 
+/**
+ * Collection of prompt templates used to instruct the AI engine.
+ * Each template maps a financial context string into a structured JSON request.
+ * Ensure that any modifications to these templates maintain the strict JSON output requirement.
+ */
+
 export const PROMPT_TEMPLATES = {
   monthlySummary: (context) => `
 You are a friendly personal finance advisor for Indian users. Analyze this spending data and provide a concise monthly financial summary.
@@ -170,6 +176,13 @@ Respond STRICTLY in the following JSON format without any markdown wrappers or a
 `
 };
 
+/**
+ * Builds a comprehensive financial context string from raw expense data.
+ * This string is injected into the AI prompts to provide context about user spending.
+ * 
+ * @param {Object} expenseData - The aggregated expense metrics for the month
+ * @returns {string} A formatted string summarizing the user's financial activity
+ */
 export const buildFinancialContext = (expenseData) => {
   const { month, year, totalSpent, byCategory, transactionCount, dailyAverage, previousMonthTotal, topMerchants, paymentMethods } = expenseData;
   
@@ -211,6 +224,15 @@ export const buildFinancialContext = (expenseData) => {
   return context;
 };
 
+/**
+ * Core function to communicate with the Groq API.
+ * Uses retry logic with exponential backoff for rate limits and server errors.
+ * 
+ * @param {string} prompt - The complete prompt string to send
+ * @param {Object} options - Configuration options (retries, delay, tokens)
+ * @returns {Promise<string>} The raw text response from the AI model
+ * @throws {Error} If the API remains unavailable after all retry attempts
+ */
 const callGroq = async (prompt, options = {}) => {
   const { maxRetries = 3, retryDelay = 2000, maxOutputTokens = 2048 } = options;
   let attempt = 0;
@@ -270,6 +292,16 @@ const cleanJsonResponse = (text) => {
   return cleaned.trim();
 };
 
+/**
+ * Main entry point for generating AI insights.
+ * Selects the appropriate prompt template, fetches the response, and ensures valid JSON structure.
+ * 
+ * @param {string} type - The type of insight to generate (e.g., 'monthlySummary', 'budgetAdvice')
+ * @param {Object} expenseData - The aggregated expense metrics for context
+ * @param {Object} extra - Additional parameters specific to the insight type (like budgetGoal)
+ * @returns {Promise<Object>} A strictly parsed JSON object matching the requested insight structure
+ * @throws {ApiError} If the generation fails or the AI returns malformed JSON repeatedly
+ */
 export const generateInsight = async (type, expenseData, extra = {}) => {
   try {
     const context = buildFinancialContext(expenseData);

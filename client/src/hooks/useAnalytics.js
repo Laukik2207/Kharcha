@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as analyticsService from '../services/analyticsService';
 
+/**
+ * Custom React hook for managing complex analytics data fetching and state.
+ * Handles loading states, errors, and data fetching for various chart components.
+ * Automatically synchronizes with selected date filters (years and months).
+ * 
+ * @returns {Object} State and control functions (data objects, loading object, error string, fetch triggers)
+ */
 export const useAnalytics = () => {
   const [monthlySummary, setMonthlySummary] = useState(null);
   const [categorySummary, setCategorySummary] = useState(null);

@@ -1,5 +1,10 @@
 import CategoryRule from '../models/CategoryRule.js';
 
+/**
+ * Pre-defined system rules for categorizing common Indian merchants.
+ * These rules act as a baseline fallback when the user has no custom rules.
+ * Order of execution is controlled by the 'priority' property.
+ */
 export const SYSTEM_RULES = [
   // Food
   { type: 'keyword', pattern: 'swiggy', category: 'Food' },
@@ -124,6 +129,13 @@ export const SYSTEM_RULES = [
   { type: 'keyword', pattern: 'rohit bh', category: 'Others' },
 ].map(r => ({ ...r, priority: 0 }));
 
+/**
+ * Evaluates a single rule against a merchant name.
+ * 
+ * @param {Object} rule - The rule object containing type and pattern
+ * @param {string} merchantLower - The lowercased merchant name
+ * @returns {boolean} True if the rule matches, false otherwise
+ */
 export const applyRule = (rule, merchantLower) => {
   if (!merchantLower) return false;
 
@@ -144,6 +156,15 @@ export const applyRule = (rule, merchantLower) => {
   }
 };
 
+/**
+ * Determines the category for a specific merchant by testing against both
+ * user-defined rules and system fallback rules. User rules take precedence
+ * based on their priority score.
+ * 
+ * @param {string} merchant - The raw merchant string from the transaction
+ * @param {Array} userRules - List of custom rules defined by the user
+ * @returns {Object} An object containing the resolved category and match status
+ */
 export const categorize = (merchant, userRules = []) => {
   const defaultResult = { category: 'Others', matched: false, matchedRule: null };
   if (!merchant) return defaultResult;
@@ -164,6 +185,13 @@ export const categorize = (merchant, userRules = []) => {
   return defaultResult;
 };
 
+/**
+ * Bulk categorizes an array of normalized transaction rows.
+ * 
+ * @param {Array} normalizedRows - The parsed transactions ready for categorization
+ * @param {Array} userRules - The user's active categorization rules
+ * @returns {Array} The rows updated with their determined category and flag
+ */
 export const categorizeAll = (normalizedRows, userRules = []) => {
   return normalizedRows.map(row => {
     const result = categorize(row.merchant, userRules);

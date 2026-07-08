@@ -8,6 +8,15 @@ import { parseCSVFile, parseCSVFromBuffer, detectCSVFormat, normalizeRows, detec
 import { categorizeAll, loadUserRules } from '../services/categorizationService.js';
 import { uploadFileToS3, deleteFileFromS3, getSignedDownloadUrl } from '../services/s3Service.js';
 
+/**
+ * Core background job for processing an uploaded bank statement.
+ * Parses the CSV, categorizes transactions via rules, and inserts them into the database.
+ * Updates the UploadedStatement record with success/failure status.
+ * 
+ * @param {ObjectId|string} statementId - The ID of the UploadedStatement tracking record
+ * @param {Buffer} fileBuffer - The raw file buffer from multer
+ * @param {ObjectId|string} userId - The user's ID
+ */
 export const processStatement = async (statementId, fileBuffer, userId) => {
   try {
     const rawContent = fileBuffer.toString('utf8');
@@ -86,6 +95,12 @@ export const processStatement = async (statementId, fileBuffer, userId) => {
   }
 };
 
+/**
+ * Route handler for the initial statement upload.
+ * Uploads the file to S3 securely, creates a tracking record in the DB, 
+ * responds to the client immediately with HTTP 202 (Accepted), and kicks off 
+ * background processing.
+ */
 export const uploadStatement = asyncHandler(async (req, res) => {
   if (!req.file) {
     throw new ApiError(400, 'No file uploaded');

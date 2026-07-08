@@ -5,6 +5,15 @@ import AIInsight from '../models/AIInsight.js';
 import Expense from '../models/Expense.js';
 import { generateInsight } from '../services/aiInsightService.js';
 
+/**
+ * Aggregates all expense data for a specific user during a given month/year.
+ * This is the core data building block sent to the AI for analysis.
+ * 
+ * @param {ObjectId|string} userId - The user's database ID
+ * @param {number} month - The month (1-12)
+ * @param {number} year - The year (e.g., 2024)
+ * @returns {Promise<Object>} Formatted object containing totals, category breakdowns, and top merchants
+ */
 const buildExpenseData = async (userId, month, year) => {
   const start = new Date(year, month - 1, 1);
   const end = new Date(year, month, 0, 23, 59, 59, 999);
@@ -80,6 +89,15 @@ const getCachedInsight = async (userId, type, month, year) => {
   return null;
 };
 
+/**
+ * Handles individual AI insight requests (e.g., just 'savings' or just 'anomalies').
+ * Checks cache first to avoid redundant AI calls, otherwise builds data and queries AI.
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {string} type - Internal DB type identifier (e.g., 'monthly_summary')
+ * @param {string} promptType - The prompt template key in aiInsightService
+ */
 const handleInsightRequest = async (req, res, type, promptType) => {
   const month = parseInt(req.query.month) || new Date().getMonth() + 1;
   const year = parseInt(req.query.year) || new Date().getFullYear();
@@ -147,6 +165,16 @@ const saveInsight = async (userId, type, month, year, data, expenseSnapshot) => 
   );
 };
 
+/**
+ * Orchestrates the generation of a complete AI analysis across all 4 main categories.
+ * Tries to fulfill from cache first, then falls back to a single unified AI request
+ * which generates everything at once for efficiency.
+ * 
+ * @param {ObjectId|string} userId - The user's ID
+ * @param {string|number} month - The requested month
+ * @param {string|number} year - The requested year
+ * @returns {Promise<Object|null>} An object containing summary, savings, anomalies, and patterns, or null if no data
+ */
 const generateCompleteAnalysisData = async (userId, month, year) => {
   // 1. Check cache for all 4 types first
   const types = ['monthly_summary', 'savings', 'anomalies', 'patterns'];

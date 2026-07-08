@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import * as insightService from '../services/insightService';
 
+/**
+ * Custom React hook for fetching and managing AI-generated insights.
+ * Combines multiple types of insights into a single unified fetch to reduce API calls
+ * and manages individual loading/error states for each insight type.
+ * 
+ * @param {Object} options - Configuration options for the hook
+ * @param {boolean} [options.autoFetch=true] - Whether to fetch automatically on mount/filter change
+ * @param {Array<string>} [options.types] - Specific insight types to fetch
+ * @returns {Object} Insight data, loading states, error states, and manual fetch triggers
+ */
 export const useInsights = (options = {}) => {
   const { autoFetch = true, types = ['summary', 'savings', 'anomalies', 'patterns'] } = options;
 

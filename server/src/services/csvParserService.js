@@ -24,6 +24,13 @@ export const parseCSVFromBuffer = (buffer) => {
   });
 };
 
+/**
+ * Heuristically detects if the provided CSV content is a raw bank statement 
+ * containing unstructured header/footer rows, or a clean standard CSV.
+ * 
+ * @param {string} rawContent - The raw text content of the CSV file
+ * @returns {string} Either 'real_bank_statement' or 'standard_csv'
+ */
 export function detectFileType(rawContent) {
   // Check if this is a real bank statement with blank header rows
   if (
@@ -121,6 +128,14 @@ function parseTransactionRow(rawRow) {
   };
 }
 
+/**
+ * Parses a raw, messy bank statement by locating the header row and footer boundaries,
+ * merging multi-line transaction details, and extracting relevant fields.
+ * 
+ * @param {Buffer|string} filePathOrBuffer - The raw file buffer or file path
+ * @returns {Promise<Array>} A structured list of normalized transactions
+ * @throws {Error} If no valid header row can be found
+ */
 export async function parseRealBankStatement(filePathOrBuffer) {
   const content = Buffer.isBuffer(filePathOrBuffer) ? filePathOrBuffer.toString('utf8') : fs.readFileSync(filePathOrBuffer, 'utf8');
   const lines = content.split('\n');
@@ -166,6 +181,13 @@ export async function parseRealBankStatement(filePathOrBuffer) {
   return mergedRows.map(row => parseTransactionRow(row)).filter(Boolean);
 }
 
+/**
+ * Identifies the specific bank format of a standard CSV based on its column headers.
+ * Supported formats: HDFC, SBI, ICICI, UPI, or Kharcha standard format.
+ * 
+ * @param {Array<string>} headers - The extracted CSV header row
+ * @returns {string} The identified format identifier or 'unknown'
+ */
 export const detectCSVFormat = (headers) => {
   if (!headers || headers.length === 0) return 'unknown';
 
@@ -225,6 +247,14 @@ const cleanAmount = (amtStr) => {
   return parseFloat(cleanStr);
 };
 
+/**
+ * Normalizes rows from variously formatted CSVs into a strict, unified transaction schema.
+ * Handles data cleaning, amount parsing, date standardizing, and merchant extraction.
+ * 
+ * @param {Array<Object>} rows - The raw parsed CSV rows mapped by column headers
+ * @param {string} format - The detected format of the CSV
+ * @returns {Array<Object>} Normalized objects containing {date, amount, merchant, note, paymentMethod}
+ */
 export const normalizeRows = (rows, format) => {
   const normalized = [];
 
