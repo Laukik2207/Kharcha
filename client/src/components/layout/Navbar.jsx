@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 
-const Navbar = ({ onMenuClick }) => {
+const Navbar = ({ isOpen, onMenuClick, onMenuMouseEnter, onMenuMouseLeave }) => {
   const location = useLocation();
   const { toggleTheme, isDark } = useTheme();
   const { user, logout } = useAuth();
@@ -27,10 +27,27 @@ const Navbar = ({ onMenuClick }) => {
       <div className="flex items-center gap-4">
         <button 
           onClick={onMenuClick}
-          className="p-2 -ml-2 text-surface-400 hover:text-white hover:bg-surface-800 rounded-xl lg:hidden transition-colors"
+          onMouseEnter={onMenuMouseEnter}
+          onMouseLeave={onMenuMouseLeave}
+          className="p-2 -ml-2 text-surface-400 hover:text-white hover:bg-surface-800 rounded-xl transition-colors relative z-50 flex items-center justify-center w-10 h-10"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            <motion.path 
+              strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+              animate={isOpen ? { d: "M6 18L18 6" } : { d: "M4 6h16" }}
+              transition={{ duration: 0.3, type: "spring" }}
+            />
+            <motion.path 
+              strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+              d="M4 12h16"
+              animate={isOpen ? { opacity: 0, scale: 0.5 } : { opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            />
+            <motion.path 
+              strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+              animate={isOpen ? { d: "M6 6l12 12" } : { d: "M4 18h16" }}
+              transition={{ duration: 0.3, type: "spring" }}
+            />
           </svg>
         </button>
         <h1 className="text-xl font-semibold text-white tracking-tight hidden lg:block">{getPageTitle()}</h1>

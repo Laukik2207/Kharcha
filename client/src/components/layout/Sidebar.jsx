@@ -14,28 +14,50 @@ const navItems = [
   { path: '/unknown-merchants', label: 'Unknown Merchants', icon: <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, hasBadge: true },
 ];
 
-const Sidebar = ({ isOpen, setIsOpen }) => {
+const Sidebar = ({ isOpen, setIsOpen, onMouseEnter, onMouseLeave }) => {
   const { user, logout } = useAuth();
   const { toggleTheme, isDark } = useTheme();
 
   const unknownMerchantsCount = 0; // Replace with actual context later
+
+  const drawerVariants = {
+    open: { 
+      x: 0,
+      transition: { type: "spring", stiffness: 300, damping: 30, staggerChildren: 0.05, delayChildren: 0.1 }
+    },
+    closed: { 
+      x: "-100%",
+      transition: { type: "spring", stiffness: 300, damping: 30 }
+    }
+  };
+
+  const itemVariants = {
+    open: { opacity: 1, x: 0 },
+    closed: { opacity: 0, x: -20 }
+  };
 
   return (
     <>
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            transition={{ duration: 0.3 }}
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+            className="fixed inset-0 bg-black/60 z-40"
           />
         )}
       </AnimatePresence>
 
-      <aside
-        className={`fixed lg:static inset-y-0 left-0 w-64 bg-surface-950/90 backdrop-blur-xl border-r border-white/5 flex flex-col z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+      <motion.aside
+        initial="closed"
+        animate={isOpen ? "open" : "closed"}
+        variants={drawerVariants}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        className="fixed inset-y-0 left-0 w-64 bg-surface-950/90 backdrop-blur-xl border-r border-white/5 flex flex-col z-50"
       >
         <div className="h-16 flex items-center px-6 border-b border-surface-800">
           <div className="flex items-center gap-3">
@@ -53,34 +75,35 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
         <nav className="flex-1 py-6 px-3 overflow-y-auto custom-scrollbar space-y-1">
           {navItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => 
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
-                  isActive 
-                  ? 'bg-primary-500/15 text-primary-300 border border-primary-500/20 shadow-glow-primary/20 relative' 
-                  : 'text-surface-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`
-              }
-              onClick={() => {
-                if (window.innerWidth < 1024) setIsOpen(false);
-              }}
-            >
-              {({ isActive }) => (
-                <motion.div 
-                  className="flex items-center gap-3 w-full"
-                  whileHover={{ x: isActive ? 0 : 4 }}
-                >
-                  {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-primary-500 rounded-r-full" />}
-                  {item.icon}
-                  <span className="font-medium text-sm flex-1">{item.label}</span>
-                  {item.hasBadge && unknownMerchantsCount > 0 && (
-                    <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-glow-amber"></div>
-                  )}
-                </motion.div>
-              )}
-            </NavLink>
+            <motion.div key={item.path} variants={itemVariants}>
+              <NavLink
+                to={item.path}
+                className={({ isActive }) => 
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${
+                    isActive 
+                    ? 'bg-primary-500/15 text-primary-300 border border-primary-500/20 shadow-glow-primary/20 relative' 
+                    : 'text-surface-400 hover:text-white hover:bg-white/5 border border-transparent'
+                  }`
+                }
+                onClick={() => {
+                  if (window.innerWidth < 1024) setIsOpen(false);
+                }}
+              >
+                {({ isActive }) => (
+                  <motion.div 
+                    className="flex items-center gap-3 w-full"
+                    whileHover={{ x: isActive ? 0 : 4 }}
+                  >
+                    {isActive && <div className="absolute left-0 top-2 bottom-2 w-0.5 bg-primary-500 rounded-r-full" />}
+                    {item.icon}
+                    <span className="font-medium text-sm flex-1">{item.label}</span>
+                    {item.hasBadge && unknownMerchantsCount > 0 && (
+                      <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-glow-amber"></div>
+                    )}
+                  </motion.div>
+                )}
+              </NavLink>
+            </motion.div>
           ))}
         </nav>
 
@@ -124,7 +147,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
             </button>
           </div>
         </div>
-      </aside>
+      </motion.aside>
     </>
   );
 };

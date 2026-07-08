@@ -7,13 +7,35 @@ import Navbar from './Navbar';
 const PageWrapper = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const location = useLocation();
+  const hoverTimeout = React.useRef(null);
+
+  const handleMouseEnter = () => {
+    if (hoverTimeout.current) clearTimeout(hoverTimeout.current);
+    setSidebarOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    hoverTimeout.current = setTimeout(() => {
+      setSidebarOpen(false);
+    }, 300); // 300ms grace period
+  };
 
   return (
     <div className="flex h-screen bg-surface-950 overflow-hidden">
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      <Sidebar 
+        isOpen={sidebarOpen} 
+        setIsOpen={setSidebarOpen} 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      />
       
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Navbar onMenuClick={() => setSidebarOpen(true)} />
+        <Navbar 
+          isOpen={sidebarOpen}
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          onMenuMouseEnter={handleMouseEnter}
+          onMenuMouseLeave={handleMouseLeave}
+        />
         
         <main className="flex-1 overflow-y-auto custom-scrollbar relative">
           <AnimatePresence mode="wait">
