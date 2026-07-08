@@ -6,7 +6,6 @@ import { useAuth } from '../../context/AuthContext';
 
 const Navbar = ({ isOpen, onMenuClick, onMenuMouseEnter, onMenuMouseLeave }) => {
   const location = useLocation();
-  const { toggleTheme, isDark } = useTheme();
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -23,7 +22,7 @@ const Navbar = ({ isOpen, onMenuClick, onMenuMouseEnter, onMenuMouseLeave }) => 
   };
 
   return (
-    <header className="h-16 bg-surface-950/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 sm:px-6 z-30 sticky top-0">
+    <header className="h-16 bg-surface-950/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 sm:px-6 z-[105] sticky top-0">
       <div className="flex items-center gap-4">
         <button 
           onClick={onMenuClick}
@@ -57,26 +56,7 @@ const Navbar = ({ isOpen, onMenuClick, onMenuMouseEnter, onMenuMouseLeave }) => 
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
-        <button 
-          onClick={toggleTheme}
-          className="p-2 text-surface-400 hover:text-white hover:bg-surface-800 rounded-xl hidden sm:block transition-colors"
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={isDark ? 'dark' : 'light'}
-              initial={{ rotate: -90, scale: 0 }}
-              animate={{ rotate: 0, scale: 1 }}
-              exit={{ rotate: 90, scale: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              {isDark ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </button>
+
 
         <button className="p-2 text-surface-400 hover:text-white hover:bg-surface-800 rounded-xl relative transition-colors">
           <div className="absolute top-2 right-2 w-2 h-2 bg-primary-500 rounded-full animate-pulse shadow-glow-primary"></div>
