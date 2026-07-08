@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { formatINR, formatDate } from '../../utils/formatCurrency';
-import CategoryBadge, { CATEGORY_COLORS } from '../categories/CategoryBadge';
-import { HelpCircle, Check, X, ShieldAlert } from 'lucide-react';
+import { HelpCircle, Check, X } from 'lucide-react';
 
 const CATEGORIES = ['Food', 'Shopping', 'Groceries', 'Petrol', 'Entertainment', 'Bills', 'Travel', 'Health', 'Others'];
 

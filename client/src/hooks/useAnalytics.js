@@ -124,10 +124,12 @@ export const useAnalytics = () => {
       fetchMerchants(),
       fetchPayments()
     ]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYears, selectedMonths]);
 
   useEffect(() => {
     fetchAvailableDates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

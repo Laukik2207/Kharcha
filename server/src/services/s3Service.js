@@ -26,7 +26,7 @@ export const uploadFileToS3 = async (fileBuffer, originalFileName, userId, mimeT
       location: `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`
     };
   } catch (err) {
-    throw new Error(`S3 upload failed: ${err.message}`);
+    throw new Error(`S3 upload failed: ${err.message}`, { cause: err });
   }
 };
 
@@ -39,7 +39,7 @@ export const getSignedDownloadUrl = async (s3Key, expiresInSeconds = 3600) => {
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: expiresInSeconds });
     return signedUrl;
   } catch (err) {
-    throw new Error('Failed to generate download URL');
+    throw new Error('Failed to generate download URL', { cause: err });
   }
 };
 
@@ -55,7 +55,7 @@ export const deleteFileFromS3 = async (s3Key) => {
       console.warn(`File not found in S3 (NoSuchKey), skipping delete for key: ${s3Key}`);
       return;
     }
-    throw new Error(`S3 delete failed: ${err.message}`);
+    throw new Error(`S3 delete failed: ${err.message}`, { cause: err });
   }
 };
 
@@ -74,7 +74,7 @@ export const getFileMetadata = async (s3Key) => {
     };
   } catch (err) {
     if (err.name === 'NotFound') {
-      throw new Error('File not found in S3');
+      throw new Error('File not found in S3', { cause: err });
     }
     throw err;
   }
@@ -91,7 +91,7 @@ export const generateUploadPresignedUrl = async (userId, fileName, mimeType) => 
     const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 });
     return { uploadUrl, key: s3Key };
   } catch (err) {
-    throw new Error(`Failed to generate upload URL: ${err.message}`);
+    throw new Error(`Failed to generate upload URL: ${err.message}`, { cause: err });
   }
 };
 
@@ -111,6 +111,6 @@ export const listUserFiles = async (userId) => {
       lastModified: item.LastModified,
     }));
   } catch (err) {
-    throw new Error(`Failed to list files: ${err.message}`);
+    throw new Error(`Failed to list files: ${err.message}`, { cause: err });
   }
 };

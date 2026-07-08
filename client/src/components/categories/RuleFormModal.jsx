@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import CategoryBadge, { CATEGORY_ICONS } from './CategoryBadge';
+import { CATEGORY_ICONS } from '../../utils/categoryConstants';
 import MerchantPreview from './MerchantPreview';
 
 const RuleFormModal = ({ isOpen, onClose, onSubmit, initialData, loading, onTestPreview }) => {

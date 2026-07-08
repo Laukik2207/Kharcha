@@ -69,7 +69,7 @@ function parseTransactionRow(rawRow) {
   const dateMatch = rawDate.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
   if (!dateMatch) return null;
 
-  const [_, day, month, year] = dateMatch;
+  const [, day, month, year] = dateMatch;
   const date = new Date(`${year}-${month}-${day}`);
   if (isNaN(date.getTime())) return null;
 
@@ -84,11 +84,11 @@ function parseTransactionRow(rawRow) {
   const amount = parseFloat(debitStr);
   if (isNaN(amount) || amount <= 0) return null;
 
-  let merchant = 'Unknown';
+  let merchant;
   let paymentMethod = 'UPI';
   let refNo = columns[2] || '';
 
-  const upiMatch = details.match(/UPI\/DR\/(\d+)\/([^\/]+)\//) || details.match(/UPI\/DR\/(\d+)\/([^\/]+)/);
+  const upiMatch = details.match(/UPI\/DR\/(\d+)\/([^/]+)\//) || details.match(/UPI\/DR\/(\d+)\/([^/]+)/);
   if (upiMatch) {
     refNo = refNo || upiMatch[1];
     merchant = upiMatch[2].trim();

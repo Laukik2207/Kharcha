@@ -2,7 +2,6 @@ import React, { useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useExpenses } from '../hooks/useExpenses';
-import { useAuth } from '../context/AuthContext';
 import { useInsights } from '../hooks/useInsights';
 import MultiDateFilter from '../components/dashboard/MultiDateFilter';
 import MonthlyLineChart from '../components/charts/MonthlyLineChart';
@@ -29,7 +28,6 @@ const itemVariants = {
 };
 
 const Dashboard = () => {
-  const { user } = useAuth();
   
   const {
     monthlySummary,

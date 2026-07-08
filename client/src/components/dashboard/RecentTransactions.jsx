@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { formatINR, formatDate } from '../../utils/formatCurrency';
-import CategoryBadge, { CATEGORY_ICONS } from '../categories/CategoryBadge';
+import { CATEGORY_ICONS } from '../../utils/categoryConstants';
 import Button from '../common/Button';
 
 const RecentTransactions = ({ expenses, loading }) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from 'recharts';
 import { formatINR } from '../../utils/formatCurrency';
-import { CATEGORY_COLORS } from '../categories/CategoryBadge';
+import { CATEGORY_COLORS } from '../../utils/categoryConstants';
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {

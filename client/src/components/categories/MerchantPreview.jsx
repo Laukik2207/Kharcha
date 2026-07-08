@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const DEFAULT_MERCHANTS = [
   'Swiggy Food',
@@ -19,15 +19,7 @@ const MerchantPreview = ({ pattern, type, onTest }) => {
   const [results, setResults] = useState([]);
   const [testing, setTesting] = useState(false);
 
-  useEffect(() => {
-    // Debounce live testing
-    const timer = setTimeout(() => {
-      runTest();
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [pattern, type, merchants]); // eslint-disable-line
-
-  const runTest = async () => {
+  const runTest = useCallback(async () => {
     if (!pattern || !type) {
       setResults([]);
       return;
@@ -38,7 +30,15 @@ const MerchantPreview = ({ pattern, type, onTest }) => {
       setResults(res.results);
     }
     setTesting(false);
-  };
+  }, [pattern, type, merchants, onTest]);
+
+  useEffect(() => {
+    // Debounce live testing
+    const timer = setTimeout(() => {
+      runTest();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [runTest]);
 
   const handleAddMerchant = (e) => {
     e.preventDefault();

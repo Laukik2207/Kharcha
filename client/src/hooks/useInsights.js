@@ -129,6 +129,7 @@ export const useInsights = (options = {}) => {
     return () => {
       isMounted = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMonth, selectedYear, autoFetch]); // types array omitted intentionally to avoid infinite loops if passed inline
 
   return {

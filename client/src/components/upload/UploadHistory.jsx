@@ -1,6 +1,5 @@
 import React from 'react';
 import { formatDate } from '../../utils/formatCurrency';
-import CategoryBadge from '../categories/CategoryBadge';
 
 const FormatBadge = ({ format }) => {
   const styles = {
