@@ -46,19 +46,21 @@ const Insights = () => {
         <AIInsightsBanner />
       </motion.div>
 
-      <motion.div variants={itemVariants} className="page-header">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-12">
         <div>
-          <h2 className="page-title">Financial Intelligence</h2>
-          <p className="page-subtitle">Select a month to analyze your spending</p>
+          <h2 className="text-4xl font-display font-semibold text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-surface-400 tracking-tight mb-2">
+            Financial Intelligence
+          </h2>
+          <p className="text-surface-400 font-medium tracking-wide">Select a month to analyze your spending</p>
         </div>
         <div className="flex flex-wrap items-center gap-4">
           <Button 
             onClick={refreshAll}
             disabled={loading.summary || loading.savings || loading.anomalies || loading.patterns}
-            variant="secondary"
+            className="btn-secondary hover:bg-white/5 border-white/10 hover:border-white/20 transition-all duration-300 backdrop-blur-md"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${(loading.summary || loading.savings || loading.anomalies || loading.patterns) ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh Insights</span>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading.summary || loading.savings || loading.anomalies || loading.patterns ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline text-white font-medium">Refresh Insights</span>
           </Button>
           <MonthYearSelector 
             selectedMonth={selectedMonth}
@@ -72,70 +74,61 @@ const Insights = () => {
       <div className="space-y-6">
         {/* Row 1: Monthly Summary (Full Width) */}
         <motion.div variants={itemVariants}>
-          <div className="glass-card p-1">
-            <MonthlySummaryCard 
-              data={summary} 
-              loading={loading.summary} 
-              error={error.summary}
-              cached={summary?.cached}
-              generatedAt={summary?.generatedAt}
-            />
-          </div>
+          <MonthlySummaryCard 
+            data={summary} 
+            loading={loading.summary} 
+            error={error.summary}
+            cached={summary?.cached}
+            generatedAt={summary?.generatedAt}
+          />
         </motion.div>
 
         {/* Row 2: Savings & Anomalies (2 Cols) */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="glass-card p-1">
-            <SavingsCard 
-              data={savings} 
-              loading={loading.savings} 
-              error={error.savings}
-              cached={savings?.cached}
-              generatedAt={savings?.generatedAt}
-            />
-          </div>
-          <div className="glass-card p-1">
-            <AnomalyCard 
-              data={anomalies} 
-              loading={loading.anomalies} 
-              error={error.anomalies}
-              cached={anomalies?.cached}
-              generatedAt={anomalies?.generatedAt}
-            />
-          </div>
+          <SavingsCard 
+            data={savings} 
+            loading={loading.savings} 
+            error={error.savings}
+            cached={savings?.cached}
+            generatedAt={savings?.generatedAt}
+          />
+          <AnomalyCard 
+            data={anomalies} 
+            loading={loading.anomalies} 
+            error={error.anomalies}
+            cached={anomalies?.cached}
+            generatedAt={anomalies?.generatedAt}
+          />
         </motion.div>
 
         {/* Row 3: Patterns & Budget Advisor (2 Cols) */}
         <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="glass-card p-1">
-            <PatternCard 
-              data={patterns} 
-              loading={loading.patterns} 
-              error={error.patterns}
-              cached={patterns?.cached}
-              generatedAt={patterns?.generatedAt}
-            />
-          </div>
-          <div className="glass-card p-1">
-            <BudgetAdvisorCard 
-              data={budget}
-              loading={loading.budget}
-              error={error.budget}
-              onFetchAdvice={fetchBudgetAdvice}
-            />
-          </div>
+          <PatternCard 
+            data={patterns} 
+            loading={loading.patterns} 
+            error={error.patterns}
+            cached={patterns?.cached}
+            generatedAt={patterns?.generatedAt}
+          />
+          <BudgetAdvisorCard 
+            data={budget}
+            loading={loading.budget}
+            error={error.budget}
+            onFetchAdvice={fetchBudgetAdvice}
+          />
         </motion.div>
       </div>
 
       {/* Insight History (Collapsible) */}
-      <motion.div variants={itemVariants} className="mt-12 glass-card overflow-hidden">
+      <motion.div variants={itemVariants} className="mt-12 glass-panel rounded-3xl overflow-hidden relative group">
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none"></div>
         <button 
           onClick={() => setHistoryOpen(!historyOpen)}
-          className="w-full px-6 py-5 flex items-center justify-between hover:bg-white/5 transition-colors"
+          className="w-full px-8 py-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors relative z-10"
         >
-          <div className="flex items-center gap-3">
-            <h3 className="font-bold text-white text-lg">Insight Generation History</h3>
-            <span className="bg-surface-800 text-surface-400 border border-surface-700/50 text-[10px] px-2.5 py-0.5 rounded-full font-bold tracking-wider">LOGS</span>
+          <div className="flex items-center gap-4">
+            <h3 className="font-semibold text-white text-lg tracking-wide">Insight Generation History</h3>
+            <span className="badge badge-primary">LOGS</span>
           </div>
           <motion.div
             animate={{ rotate: historyOpen ? 180 : 0 }}

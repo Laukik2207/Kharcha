@@ -17,11 +17,12 @@ const PatternCard = ({ data, loading, error, onRefresh, cached, generatedAt }) =
       {data && !data.empty && (
         <div className="space-y-5">
           
-          <div className="bg-purple-500/10 border-l-4 border-purple-500 p-4 rounded-r-lg">
-            <h3 className="font-semibold text-purple-400 italic text-sm mb-1">
+          <div className="bg-purple-500/10 border-l-[3px] border-purple-500 p-5 rounded-r-2xl shadow-[0_0_15px_rgba(168,85,247,0.05)] relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/[0.02] to-transparent pointer-events-none"></div>
+            <h3 className="font-medium text-purple-400 italic text-sm mb-2 tracking-wide">
               "{data.topHabit}"
             </h3>
-            <p className="text-xs text-gray-300 leading-relaxed">
+            <p className="text-sm text-surface-300 leading-relaxed font-medium">
               {data.behaviorSummary}
             </p>
           </div>
@@ -35,7 +36,9 @@ const PatternCard = ({ data, loading, error, onRefresh, cached, generatedAt }) =
         </div>
       )}
       {data?.empty && (
-        <p className="text-sm text-gray-400 text-center py-4">Not enough data to find patterns.</p>
+        <div className="flex items-center justify-center py-8">
+          <p className="text-sm text-surface-400 text-center bg-white/5 px-4 py-2 rounded-full border border-white/5">Not enough data to find patterns.</p>
+        </div>
       )}
     </InsightCard>
   );

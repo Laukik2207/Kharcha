@@ -10,18 +10,21 @@ const SparkleIcon = () => (
 
 const AIInsightsBanner = () => {
   return (
-    <div className="bg-surface border border-gray-800 rounded-2xl p-6 relative overflow-hidden flex items-center justify-between shadow-sm">
+    <div className="premium-card rounded-3xl p-8 relative overflow-hidden flex items-center justify-between group">
       {/* Background decoration */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-surface-800 to-transparent pointer-events-none opacity-50"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-white/[0.03] rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 pointer-events-none group-hover:bg-white/[0.05] transition-all duration-1000"></div>
       
       <div className="relative z-10">
         <div className="flex items-center gap-3 mb-2">
-          <SparkleIcon />
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-400 via-purple-400 to-teal-400 text-transparent bg-clip-text animate-gradient-text">
+          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white shadow-inner">
+            <SparkleIcon />
+          </div>
+          <h1 className="text-2xl font-display font-semibold text-white tracking-wide">
             Powered by Gemini AI
           </h1>
         </div>
-        <p className="text-gray-400 text-sm">
+        <p className="text-surface-400 font-medium tracking-wide">
           Personalized financial insights generated from your spending data
         </p>
       </div>

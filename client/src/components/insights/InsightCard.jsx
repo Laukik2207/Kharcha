@@ -29,18 +29,22 @@ const InsightCard = ({ title, icon, children, loading, error, onRefresh, cached,
   }, [generatedAt]);
 
   return (
-    <div className={`bg-surface rounded-2xl border border-gray-800 shadow-sm overflow-hidden flex flex-col h-full animate-fade-slide-up border-l-4 ${accentColor}`}>
+    <div className={`premium-card rounded-3xl overflow-hidden flex flex-col h-full animate-fade-slide-up relative group`}>
+      {/* Glow Top Accent */}
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-current to-transparent opacity-50 ${accentColor ? accentColor.replace('border-', 'text-') : 'text-white'}`}></div>
       
       {/* Header */}
-      <div className="px-5 py-4 border-b border-gray-800 flex justify-between items-center bg-gray-900/30">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">{icon}</span>
-          <h2 className="text-lg font-bold text-gray-100">{title}</h2>
+      <div className="px-6 py-5 border-b border-white/[0.05] flex justify-between items-center bg-white/[0.02] backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-surface-800/80 border border-white/5 flex items-center justify-center text-xl shadow-inner">
+            {icon}
+          </div>
+          <h2 className="text-lg font-semibold text-white tracking-wide">{title}</h2>
         </div>
         
         <div className="flex items-center gap-3">
           {cached && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-gray-800 text-gray-400">
+            <span className="badge badge-gray">
               Cached
             </span>
           )}
@@ -48,7 +52,7 @@ const InsightCard = ({ title, icon, children, loading, error, onRefresh, cached,
             <button 
               onClick={onRefresh} 
               disabled={loading}
-              className="text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50"
+              className="text-surface-400 hover:text-white p-2 rounded-xl hover:bg-white/5 transition-all duration-300 disabled:opacity-50"
               title="Refresh insight"
             >
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
@@ -58,7 +62,7 @@ const InsightCard = ({ title, icon, children, loading, error, onRefresh, cached,
       </div>
 
       {/* Body */}
-      <div className="p-5 flex-1 flex flex-col">
+      <div className="p-6 flex-1 flex flex-col relative z-10">
         {loading ? (
           <InsightSkeleton />
         ) : error ? (
@@ -70,8 +74,8 @@ const InsightCard = ({ title, icon, children, loading, error, onRefresh, cached,
 
       {/* Footer / Meta */}
       {!loading && !error && generatedAt && (
-        <div className="px-5 py-2.5 bg-gray-900/50 border-t border-gray-800 mt-auto">
-          <p className="text-[10px] text-gray-500 font-medium text-right">
+        <div className="px-6 py-3 bg-black/40 border-t border-white/[0.05] mt-auto backdrop-blur-md">
+          <p className="text-[10px] text-surface-500 font-mono tracking-wider uppercase text-right">
             Generated {relativeTime}
           </p>
         </div>

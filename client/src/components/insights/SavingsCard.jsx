@@ -18,9 +18,9 @@ const SavingsCard = ({ data, loading, error, onRefresh, cached, generatedAt }) =
       {data && !data.empty && (
         <div className="space-y-4">
           {data.potentialMonthlySavings > 0 && (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-center">
-              <p className="text-sm text-green-400">
-                You could save up to <span className="font-bold text-green-500">{formatINR(data.potentialMonthlySavings)}</span> per month
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+              <p className="text-sm text-emerald-400/90 font-medium tracking-wide">
+                You could save up to <span className="font-bold text-emerald-400 text-lg">{formatINR(data.potentialMonthlySavings)}</span> per month
               </p>
             </div>
           )}
@@ -33,7 +33,9 @@ const SavingsCard = ({ data, loading, error, onRefresh, cached, generatedAt }) =
         </div>
       )}
       {data?.empty && (
-        <p className="text-sm text-gray-400 text-center py-4">No savings data available.</p>
+        <div className="flex items-center justify-center py-8">
+          <p className="text-sm text-surface-400 text-center bg-white/5 px-4 py-2 rounded-full border border-white/5">No savings data available.</p>
+        </div>
       )}
     </InsightCard>
   );
