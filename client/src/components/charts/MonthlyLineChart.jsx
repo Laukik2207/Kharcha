@@ -9,12 +9,13 @@ const formatIndianAxis = (value) => {
   return `₹${value}`;
 };
 
-const CustomTooltip = ({ active, payload }) => {
+const CustomTooltip = ({ active, payload, xKey = 'dateStr' }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
+    const label = data[xKey] ?? data.dateStr ?? data.month ?? '';
     return (
       <div className="bg-[#0A0A0A] border border-white/10 p-3 rounded-lg shadow-2xl backdrop-blur-md relative z-50">
-        <p className="font-mono text-xs text-surface-400 mb-1 uppercase tracking-widest">{data.dateStr}</p>
+        <p className="font-mono text-xs text-surface-400 mb-1 uppercase tracking-widest">{label}</p>
         <p className="text-lg font-display font-bold text-white">{formatINR(data.totalAmount)}</p>
         <p className="text-[10px] text-surface-500 font-mono mt-1">{data.count} TRANSACTIONS</p>
       </div>
@@ -23,15 +24,16 @@ const CustomTooltip = ({ active, payload }) => {
   return null;
 };
 
-const MonthlyLineChart = ({ dailyData, loading, height = 300 }) => {
+const MonthlyLineChart = ({ data, dailyData, xKey = 'dateStr', loading, height = 300 }) => {
   if (loading) {
     return <div className="skeleton rounded-xl" style={{ height }}></div>;
   }
 
-  // Always use the continuous daily timeline
-  const data = dailyData;
+  // Accept either a generic `data` array (with a configurable x-axis key) or the
+  // legacy `dailyData` prop used by the Dashboard's continuous daily timeline.
+  const chartData = data ?? dailyData;
 
-  const hasData = data && data.some(d => d.totalAmount > 0);
+  const hasData = chartData && chartData.some(d => d.totalAmount > 0);
 
   if (!hasData) {
     return (
@@ -47,7 +49,7 @@ const MonthlyLineChart = ({ dailyData, loading, height = 300 }) => {
   return (
     <div style={{ height }} className="relative">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
+        <AreaChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
           <defs>
             <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="white" stopOpacity={0.2} />
@@ -55,13 +57,13 @@ const MonthlyLineChart = ({ dailyData, loading, height = 300 }) => {
             </linearGradient>
           </defs>
           <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="0" vertical={false} />
-          <XAxis 
-            dataKey="dateStr" 
-            stroke="rgba(255,255,255,0.3)" 
-            fontSize={10} 
-            tickLine={false} 
+          <XAxis
+            dataKey={xKey}
+            stroke="rgba(255,255,255,0.3)"
+            fontSize={10}
+            tickLine={false}
             axisLine={false}
-            tickFormatter={(val) => val.toUpperCase()}
+            tickFormatter={(val) => String(val).toUpperCase()}
             fontFamily="Geist, monospace"
             dy={10}
             minTickGap={minTickGap}
@@ -75,9 +77,9 @@ const MonthlyLineChart = ({ dailyData, loading, height = 300 }) => {
             fontFamily="Geist, monospace"
             dx={-10}
           />
-          <Tooltip 
-            content={<CustomTooltip />} 
-            cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '3 3' }} 
+          <Tooltip
+            content={(props) => <CustomTooltip {...props} xKey={xKey} />}
+            cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1, strokeDasharray: '3 3' }}
             isAnimationActive={false}
           />
           <Area 

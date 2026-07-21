@@ -117,21 +117,39 @@ export const getCategorySummary = asyncHandler(async (req, res) => {
 
 export const getYearlySummary = asyncHandler(async (req, res) => {
   const { years, months } = req.query;
-  const matchStage = buildDateMatchStage(req.user._id, years, months);
+  const userId = req.user._id;
 
-  const data = await Expense.aggregate([
-    { $match: matchStage },
-    { $group: { _id: null, totalSpent: { $sum: '$amount' }, totalTransactions: { $sum: 1 } } }
+  const sumStage = { $group: { _id: null, total: { $sum: '$amount' }, transactions: { $sum: 1 } } };
+  const readTotals = (rows) => ({ total: rows[0]?.total || 0, transactions: rows[0]?.transactions || 0 });
+
+  // "This month" = the current selection (year + month filters applied)
+  const monthMatch = buildDateMatchStage(userId, years, months);
+
+  // Determine the primary selected year for the year-over-year comparison
+  const yearList = years ? years.split(',').map(Number).filter(Boolean) : [];
+  const primaryYear = yearList.length > 0 ? Math.max(...yearList) : new Date().getFullYear();
+
+  const yearMatch = (y) => ({ createdBy: userId, $expr: { $eq: [{ $year: '$date' }, y] } });
+
+  const [monthRows, yearRows, lastYearRows] = await Promise.all([
+    Expense.aggregate([{ $match: monthMatch }, sumStage]),
+    Expense.aggregate([{ $match: yearMatch(primaryYear) }, sumStage]),
+    Expense.aggregate([{ $match: yearMatch(primaryYear - 1) }, sumStage])
   ]);
 
-  const total = data[0]?.totalSpent || 0;
-  const count = data[0]?.totalTransactions || 0;
+  const currentMonth = readTotals(monthRows);
+  const currentYear = readTotals(yearRows);
+  const lastYear = readTotals(lastYearRows);
+
+  const yoyGrowth = lastYear.total > 0
+    ? Number((((currentYear.total - lastYear.total) / lastYear.total) * 100).toFixed(1))
+    : 0;
 
   res.json(new ApiResponse(200, {
-    currentYear: { total, transactions: count },
-    currentMonth: { total, transactions: count },
-    momGrowth: undefined,
-    yoyGrowth: undefined
+    currentYear,
+    currentMonth,
+    lastYear,
+    yoyGrowth
   }, 'Summary fetched'));
 });
 

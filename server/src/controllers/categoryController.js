@@ -138,11 +138,11 @@ export const recategorizeExpenses = asyncHandler(async (req, res) => {
   let changedCount = 0;
   
   const updates = expenses.map(expense => {
-    const newCategory = categorize(expense.merchant, userRules);
-    
+    const { category: newCategory, matched } = categorize(expense.merchant, userRules);
+
     if (newCategory !== expense.category) {
       changedCount++;
-      return Expense.findByIdAndUpdate(expense._id, { category: newCategory });
+      return Expense.findByIdAndUpdate(expense._id, { category: newCategory, isUncategorized: !matched });
     }
     return null;
   }).filter(Boolean);

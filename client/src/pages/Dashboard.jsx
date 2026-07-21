@@ -45,7 +45,7 @@ const Dashboard = () => {
   } = useAnalytics();
 
   const { expenses, fetchExpenses, loading: expensesLoading } = useExpenses();
-  const { summary: aiSummary, loading: aiLoading, error: aiError, refresh: refreshAi } = useInsights({ types: ['summary'] });
+  const { summary: aiSummary, loading: aiLoading, error: aiError, refreshAll: refreshAi } = useInsights({ types: ['summary'] });
   
   const [unknownCount, setUnknownCount] = useState(0);
   const [isInsightsDrawerOpen, setIsInsightsDrawerOpen] = useState(false);
@@ -62,6 +62,11 @@ const Dashboard = () => {
     };
     fetchCount();
   }, [fetchExpenses]);
+
+  const isMoreThan3Months = 
+    selectedYears.length > 1 || 
+    selectedMonths.length === 0 || 
+    selectedMonths.length > 3;
 
   const isCompletelyEmpty = yearlySummary?.currentYear?.transactions === 0 && yearlySummary?.lastYear?.total === 0 && !analyticsLoading.yearly;
 
@@ -211,9 +216,8 @@ const Dashboard = () => {
         </div>
         <div className="flex-1 w-full relative h-64 lg:h-80">
           <MonthlyLineChart 
-            monthlyData={monthlySummary?.monthly} 
             dailyData={dailyTrend?.dailyTrend}
-            isSingleMonth={selectedMonths.length === 1}
+            isWeekly={isMoreThan3Months}
             loading={analyticsLoading.monthly || analyticsLoading.daily} 
             height={360} 
           />
@@ -256,7 +260,7 @@ const Dashboard = () => {
         onClose={() => setIsInsightsDrawerOpen(false)} 
         data={aiSummary} 
         loading={aiLoading.summary} 
-        onRefresh={() => refreshAi('summary')} 
+        onRefresh={() => refreshAi()}
       />
 
     </motion.div>

@@ -4,7 +4,7 @@ import s3Client, { BUCKET_NAME } from '../config/cloudStorage.js';
 
 export const uploadFileToS3 = async (fileBuffer, originalFileName, userId, mimeType) => {
   try {
-    const s3Key = `statements/${userId}/${Date.now()}_${originalFileName.replace(/\\s+/g, '_')}`;
+    const s3Key = `statements/${userId}/${Date.now()}_${originalFileName.replace(/\s+/g, '_')}`;
     
     const params = {
       Bucket: BUCKET_NAME,
@@ -82,7 +82,7 @@ export const getFileMetadata = async (s3Key) => {
 
 export const generateUploadPresignedUrl = async (userId, fileName, mimeType) => {
   try {
-    const s3Key = `statements/${userId}/${Date.now()}_${fileName.replace(/\\s+/g, '_')}`;
+    const s3Key = `statements/${userId}/${Date.now()}_${fileName.replace(/\s+/g, '_')}`;
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: s3Key,

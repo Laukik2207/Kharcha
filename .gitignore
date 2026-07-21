@@ -3,3 +3,10 @@ node_modules/
 .env.*
 .DS_Store
 uploads/
+
+# Build artifacts
+dist/
+*.vsix
+
+# Personal / sensitive data — never commit real statements
+AccountStatement_*.csv

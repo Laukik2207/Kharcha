@@ -263,8 +263,23 @@ export const normalizeRows = (rows, format) => {
     let skip = false;
 
     switch (format) {
-      case 'sbi_upi':
-        return rows; // already normalized by parseRealBankStatement
+      case 'sbi_upi': {
+        // Clean CSV export using SBI/UPI columns (Date, Details, Debit, Credit, Balance).
+        // The messy raw-statement variant is handled earlier by parseRealBankStatement.
+        const keys = Object.keys(row);
+        const findKey = (name) => keys.find(k => k.toLowerCase().trim() === name);
+        dateStr = row[findKey('date')];
+        amountStr = row[findKey('debit')];
+        if (!amountStr || cleanAmount(amountStr) <= 0) {
+          skip = true;
+          break;
+        }
+        const detailsVal = row[findKey('details')];
+        merchant = detailsVal ? detailsVal.substring(0, 50).trim() : 'Unknown';
+        note = detailsVal || '';
+        paymentMethod = 'UPI';
+        break;
+      }
 
       case 'kharcha':
         dateStr = row.date;

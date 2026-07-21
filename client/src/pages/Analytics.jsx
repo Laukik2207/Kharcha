@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnalytics } from '../hooks/useAnalytics';
 import MonthYearSelector from '../components/dashboard/MonthYearSelector';
@@ -37,11 +37,27 @@ const Analytics = () => {
     topMerchants,
     paymentMethods,
     loading,
-    selectedMonth,
-    selectedYear,
-    setSelectedMonth,
-    setSelectedYear
+    selectedYears,
+    selectedMonths,
+    setSelectedYears,
+    setSelectedMonths
   } = useAnalytics();
+
+  // The hook exposes multi-select arrays (shared with the Dashboard's MultiDateFilter),
+  // but this page drives a single month/year selector. Bridge between the two shapes.
+  const now = new Date();
+  const selectedYear = selectedYears[0] ?? now.getFullYear();
+  const selectedMonth = selectedMonths[0] ?? (now.getMonth() + 1);
+  const setSelectedYear = (year) => setSelectedYears([year]);
+  const setSelectedMonth = (month) => setSelectedMonths([month]);
+
+  // Default to the current month on mount so "this month" stats aren't year-to-date.
+  useEffect(() => {
+    if (selectedMonths.length === 0) {
+      setSelectedMonths([now.getMonth() + 1]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const tabs = ['Overview', 'Categories', 'Trends'];
 
@@ -242,7 +258,7 @@ const Analytics = () => {
             >
               <div className="glass-card p-6">
                 <h3 className="section-title">Monthly Spending Trend ({selectedYear})</h3>
-                <MonthlyLineChart data={monthlySummary?.monthly} loading={loading.monthly} height={350} />
+                <MonthlyLineChart data={monthlySummary?.monthly} xKey="month" loading={loading.monthly} height={350} />
               </div>
 
               <div className="glass-card p-6">
