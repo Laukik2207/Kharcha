@@ -35,6 +35,7 @@ const Dashboard = () => {
     yearlySummary,
     topMerchants,
     paymentMethods,
+    dailyTrend,
     loading: analyticsLoading,
     selectedMonths,
     selectedYears,
@@ -175,10 +176,10 @@ const Dashboard = () => {
         <div className="premium-card p-6 rounded-xl">
           <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">TOP MERCHANT</p>
           <h2 className="text-xl font-bold truncate mb-1">
-            {analyticsLoading.merchants ? '...' : (topMerchants?.[0]?._id || 'N/A')}
+            {analyticsLoading.merchants ? '...' : (topMerchants?.topMerchants?.[0]?.merchant || 'N/A')}
           </h2>
           <p className="text-sm text-secondary opacity-60">
-            {topMerchants?.[0]?.totalAmount ? formatINR(topMerchants[0].totalAmount) : '₹0'}
+            {topMerchants?.topMerchants?.[0]?.totalAmount ? formatINR(topMerchants.topMerchants[0].totalAmount) : '₹0'}
           </p>
         </div>
 
@@ -186,10 +187,10 @@ const Dashboard = () => {
         <div className="premium-card p-6 rounded-xl">
           <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">TOP PAYMENT</p>
           <h2 className="text-xl font-bold truncate mb-1">
-            {analyticsLoading.payments ? '...' : (paymentMethods?.[0]?._id || 'N/A')}
+            {analyticsLoading.payments ? '...' : (paymentMethods?.byPaymentMethod?.[0]?.paymentMethod || 'N/A')}
           </h2>
           <p className="text-sm text-secondary opacity-60">
-            {paymentMethods?.[0]?.count ? `${paymentMethods[0].count} transactions` : '0 transactions'}
+            {paymentMethods?.byPaymentMethod?.[0]?.count ? `${paymentMethods.byPaymentMethod[0].count} transactions` : '0 transactions'}
           </p>
         </div>
       </motion.div>
@@ -210,8 +211,10 @@ const Dashboard = () => {
         </div>
         <div className="flex-1 w-full relative h-64 lg:h-80">
           <MonthlyLineChart 
-            data={monthlySummary?.monthly} 
-            loading={analyticsLoading.monthly} 
+            monthlyData={monthlySummary?.monthly} 
+            dailyData={dailyTrend?.dailyTrend}
+            isSingleMonth={selectedMonths.length === 1}
+            loading={analyticsLoading.monthly || analyticsLoading.daily} 
             height={360} 
           />
         </div>

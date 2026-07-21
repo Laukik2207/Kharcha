@@ -143,23 +143,48 @@ export const getDailyTrend = asyncHandler(async (req, res) => {
     { $match: matchStage },
     { 
       $group: { 
-        _id: { $dayOfMonth: '$date' }, 
+        _id: { 
+          year: { $year: '$date' },
+          month: { $month: '$date' },
+          day: { $dayOfMonth: '$date' } 
+        }, 
         totalAmount: { $sum: '$amount' }, 
         count: { $sum: 1 } 
       } 
     },
-    { $sort: { _id: 1 } }
+    { $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 } }
   ]);
 
-  const dailyTrend = Array.from({ length: 31 }, (_, i) => {
-    const day = i + 1;
-    const data = rawData.find(d => d._id === day);
-    return {
-      day,
+  if (rawData.length === 0) {
+    return res.json(new ApiResponse(200, { dailyTrend: [] }, 'Daily trend fetched'));
+  }
+
+  // Create continuous timeline between first and last date
+  const first = rawData[0]._id;
+  const last = rawData[rawData.length - 1]._id;
+  
+  const startDate = new Date(first.year, first.month - 1, first.day);
+  const endDate = new Date(last.year, last.month - 1, last.day);
+  
+  const dailyTrend = [];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    const y = d.getFullYear();
+    const m = d.getMonth() + 1;
+    const day = d.getDate();
+    
+    const data = rawData.find(item => item._id.year === y && item._id.month === m && item._id.day === day);
+    
+    dailyTrend.push({
+      dateStr: `${day} ${monthNames[m - 1]}`,
+      day: day,
+      month: m,
+      year: y,
       totalAmount: data ? data.totalAmount : 0,
       count: data ? data.count : 0
-    };
-  });
+    });
+  }
 
   res.json(new ApiResponse(200, { dailyTrend }, 'Daily trend fetched'));
 });

@@ -2,12 +2,19 @@ import React from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatINR } from '../../utils/formatCurrency';
 
-const CustomTooltip = ({ active, payload, label }) => {
+const formatIndianAxis = (value) => {
+  if (value >= 10000000) return `₹${(value / 10000000).toFixed(1)}Cr`;
+  if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
+  if (value >= 1000) return `₹${(value / 1000).toFixed(1)}k`;
+  return `₹${value}`;
+};
+
+const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
       <div className="bg-[#0A0A0A] border border-white/10 p-3 rounded-lg shadow-2xl backdrop-blur-md relative z-50">
-        <p className="font-mono text-xs text-surface-400 mb-1 uppercase tracking-widest">{label}</p>
+        <p className="font-mono text-xs text-surface-400 mb-1 uppercase tracking-widest">{data.dateStr}</p>
         <p className="text-lg font-display font-bold text-white">{formatINR(data.totalAmount)}</p>
         <p className="text-[10px] text-surface-500 font-mono mt-1">{data.count} TRANSACTIONS</p>
       </div>
@@ -16,10 +23,13 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const MonthlyLineChart = ({ data, loading, height = 300 }) => {
+const MonthlyLineChart = ({ dailyData, loading, height = 300 }) => {
   if (loading) {
     return <div className="skeleton rounded-xl" style={{ height }}></div>;
   }
+
+  // Always use the continuous daily timeline
+  const data = dailyData;
 
   const hasData = data && data.some(d => d.totalAmount > 0);
 
@@ -30,6 +40,9 @@ const MonthlyLineChart = ({ data, loading, height = 300 }) => {
       </div>
     );
   }
+
+  // Calculate tick interval to prevent x-axis crowding on large datasets (e.g. multi-month)
+  const minTickGap = 30;
 
   return (
     <div style={{ height }} className="relative">
@@ -43,7 +56,7 @@ const MonthlyLineChart = ({ data, loading, height = 300 }) => {
           </defs>
           <CartesianGrid stroke="rgba(255,255,255,0.05)" strokeDasharray="0" vertical={false} />
           <XAxis 
-            dataKey="month" 
+            dataKey="dateStr" 
             stroke="rgba(255,255,255,0.3)" 
             fontSize={10} 
             tickLine={false} 
@@ -51,13 +64,14 @@ const MonthlyLineChart = ({ data, loading, height = 300 }) => {
             tickFormatter={(val) => val.toUpperCase()}
             fontFamily="Geist, monospace"
             dy={10}
+            minTickGap={minTickGap}
           />
           <YAxis 
             stroke="rgba(255,255,255,0.3)" 
             fontSize={10} 
             tickLine={false} 
             axisLine={false}
-            tickFormatter={(value) => value >= 1000 ? `₹${value / 1000}k` : `₹${value}`}
+            tickFormatter={formatIndianAxis}
             fontFamily="Geist, monospace"
             dx={-10}
           />
