@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { useExpenses } from '../hooks/useExpenses';
@@ -7,7 +7,7 @@ import MultiDateFilter from '../components/dashboard/MultiDateFilter';
 import MonthlyLineChart from '../components/charts/MonthlyLineChart';
 import CategoryPieChart from '../components/charts/CategoryPieChart';
 import RecentTransactions from '../components/dashboard/RecentTransactions';
-import IntelligentInsights from '../components/dashboard/IntelligentInsights';
+import InsightsDrawer from '../components/dashboard/InsightsDrawer';
 import { formatINR } from '../utils/formatCurrency';
 import { Link } from 'react-router-dom';
 import { getUnknownCount } from '../services/unknownMerchantService';
@@ -33,6 +33,8 @@ const Dashboard = () => {
     monthlySummary,
     categorySummary,
     yearlySummary,
+    topMerchants,
+    paymentMethods,
     loading: analyticsLoading,
     selectedMonths,
     selectedYears,
@@ -43,7 +45,9 @@ const Dashboard = () => {
 
   const { expenses, fetchExpenses, loading: expensesLoading } = useExpenses();
   const { summary: aiSummary, loading: aiLoading, error: aiError, refresh: refreshAi } = useInsights({ types: ['summary'] });
-  const [unknownCount, setUnknownCount] = React.useState(0);
+  
+  const [unknownCount, setUnknownCount] = useState(0);
+  const [isInsightsDrawerOpen, setIsInsightsDrawerOpen] = useState(false);
 
   useEffect(() => {
     fetchExpenses();
@@ -72,15 +76,6 @@ const Dashboard = () => {
     const budget = 50000; // Mock budget for UI purposes
     return Math.min(Math.round((total / budget) * 100), 100);
   }, [yearlySummary]);
-
-  const getAiRecommendation = () => {
-    if (aiLoading.summary) return "Analyzing your recent spending patterns...";
-    if (aiError.summary) return "Unable to generate insights at the moment.";
-    if (aiSummary?.recommendations?.length > 0) {
-      return aiSummary.recommendations[0];
-    }
-    return "Switching to annual billing for Cloud services could save you ₹4,200/yr.";
-  };
 
   if (isCompletelyEmpty) {
     return (
@@ -128,84 +123,103 @@ const Dashboard = () => {
         </motion.div>
       )}
 
-      {/* Top Row: Metrics */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-stack-lg mb-stack-lg">
-        {/* Total Spend */}
-        <div className="premium-card p-stack-lg rounded-xl relative overflow-hidden group">
-          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">TOTAL SPEND</p>
-          <h2 className="font-display-lg text-display-lg text-[32px] font-bold mb-4">
-            {analyticsLoading.yearly ? '...' : formatINR(yearlySummary?.currentMonth?.total || 0)}
+      {/* Top Banner (Hero) */}
+      <motion.div variants={itemVariants} className="mb-stack-lg relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border border-primary/20 p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
+            <p className="font-label-mono text-[12px] text-primary font-semibold tracking-wider">AI FINANCIAL SUMMARY</p>
+          </div>
+          <h2 className="font-display-sm text-2xl font-bold text-white max-w-2xl">
+            {aiLoading.summary ? "Analyzing your spending patterns..." : (aiError.summary ? "Unable to generate insights at the moment." : (aiSummary?.headline || "Your financial health is looking good this month."))}
           </h2>
-          
-          {yearlySummary?.momGrowth !== undefined && (
-            <div className={`flex items-center gap-2 text-body-sm w-fit px-2 py-0.5 rounded ${yearlySummary.momGrowth >= 0 ? 'text-on-error bg-error/10' : 'text-green-400 bg-green-900/30'}`}>
-              <span className="material-symbols-outlined text-sm">{yearlySummary.momGrowth >= 0 ? 'trending_up' : 'trending_down'}</span>
-              <span>{Math.abs(yearlySummary.momGrowth).toFixed(1)}% vs last month</span>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 shrink-0">
+          {aiSummary?.score && (
+            <div className="text-center bg-surface-container-high rounded-xl px-4 py-2 border border-white/5">
+              <div className="text-3xl font-black text-primary">{aiSummary.score}</div>
+              <div className="text-[10px] text-primary/70 uppercase tracking-widest mt-1">{aiSummary.scoreLabel || 'Score'}</div>
             </div>
           )}
-
-          <div className="absolute bottom-0 left-0 right-0 h-12 opacity-20 pointer-events-none chart-mask">
-            <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 20">
-              <path d="M0 20 Q 25 5, 50 15 T 100 10" fill="none" stroke="white" strokeWidth="2"></path>
-            </svg>
-          </div>
-        </div>
-
-        {/* AI Savings Tip */}
-        <div className="glass-panel p-stack-lg rounded-xl relative border-primary/20 bg-gradient-to-br from-white/5 to-transparent">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>psychology</span>
-            <p className="font-label-mono text-[12px] text-primary">AI RECOMMENDATION</p>
-          </div>
-          <p className="font-body-lg text-primary leading-tight font-medium">
-            {getAiRecommendation()}
-          </p>
-          <Link to="/insights" className="mt-4 text-body-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
-            View Details <span className="material-symbols-outlined text-sm">arrow_forward</span>
-          </Link>
-        </div>
-
-        {/* Burn Rate */}
-        <div className="premium-card p-stack-lg rounded-xl">
-          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">BURN RATE</p>
-          <h2 className="font-display-lg text-display-lg text-[32px] font-bold mb-4">
-            {analyticsLoading.yearly ? '...' : formatINR(burnRate)}
-            <span className="text-body-lg opacity-40">/day</span>
-          </h2>
-          <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-white opacity-40 transition-all duration-1000" 
-              style={{ width: `${budgetExhausted}%` }}
-            ></div>
-          </div>
-          <p className="text-body-sm opacity-40 mt-2">{budgetExhausted}% of monthly budget exhausted</p>
+          <Button onClick={() => setIsInsightsDrawerOpen(true)} className="whitespace-nowrap shadow-lg shadow-primary/20">
+            View Insights ✨
+          </Button>
         </div>
       </motion.div>
 
-      {/* Middle Row: Spending Intelligence & Category Breakdown */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-stack-lg mb-stack-lg">
-        <div className="xl:col-span-2 premium-card p-stack-lg rounded-xl flex flex-col min-h-[400px]">
-          <div className="flex justify-between items-start lg:items-center mb-stack-lg flex-col lg:flex-row gap-4">
-            <h3 className="font-headline-md text-headline-md">Spending Intelligence</h3>
-            <MultiDateFilter 
-              availableDates={availableDates}
-              selectedYears={selectedYears}
-              selectedMonths={selectedMonths}
-              onChange={(years, months) => {
-                setSelectedYears(years);
-                setSelectedMonths(months);
-              }}
-            />
-          </div>
-          <div className="flex-1 w-full relative h-64">
-            <MonthlyLineChart 
-              data={monthlySummary?.monthly} 
-              loading={analyticsLoading.monthly} 
-              height={320} 
-            />
+      {/* 4 Metric Cards */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-stack-lg mb-stack-lg">
+        {/* Spend */}
+        <div className="premium-card p-6 rounded-xl relative overflow-hidden group">
+          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">TOTAL SPEND</p>
+          <h2 className="text-2xl font-bold mb-3">{analyticsLoading.yearly ? '...' : formatINR(yearlySummary?.currentMonth?.total || 0)}</h2>
+          {yearlySummary?.momGrowth !== undefined && (
+            <div className={`flex items-center gap-1 text-xs w-fit px-2 py-0.5 rounded ${yearlySummary.momGrowth >= 0 ? 'text-on-error bg-error/10' : 'text-green-400 bg-green-900/30'}`}>
+              <span className="material-symbols-outlined text-[14px]">{yearlySummary.momGrowth >= 0 ? 'trending_up' : 'trending_down'}</span>
+              <span>{Math.abs(yearlySummary.momGrowth).toFixed(1)}% vs last month</span>
+            </div>
+          )}
+        </div>
+
+        {/* Burn Rate */}
+        <div className="premium-card p-6 rounded-xl">
+          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">BURN RATE</p>
+          <h2 className="text-2xl font-bold mb-3">{analyticsLoading.yearly ? '...' : formatINR(burnRate)}<span className="text-sm opacity-40 font-normal">/day</span></h2>
+          <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-full bg-primary/80 transition-all duration-1000" style={{ width: `${budgetExhausted}%` }}></div>
           </div>
         </div>
-        
+
+        {/* Top Merchant */}
+        <div className="premium-card p-6 rounded-xl">
+          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">TOP MERCHANT</p>
+          <h2 className="text-xl font-bold truncate mb-1">
+            {analyticsLoading.merchants ? '...' : (topMerchants?.[0]?._id || 'N/A')}
+          </h2>
+          <p className="text-sm text-secondary opacity-60">
+            {topMerchants?.[0]?.totalAmount ? formatINR(topMerchants[0].totalAmount) : '₹0'}
+          </p>
+        </div>
+
+        {/* Top Payment */}
+        <div className="premium-card p-6 rounded-xl">
+          <p className="font-label-mono text-[12px] text-secondary opacity-60 mb-2">TOP PAYMENT</p>
+          <h2 className="text-xl font-bold truncate mb-1">
+            {analyticsLoading.payments ? '...' : (paymentMethods?.[0]?._id || 'N/A')}
+          </h2>
+          <p className="text-sm text-secondary opacity-60">
+            {paymentMethods?.[0]?.count ? `${paymentMethods[0].count} transactions` : '0 transactions'}
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Spending Intelligence Chart (Full Width) */}
+      <motion.div variants={itemVariants} className="premium-card p-stack-lg rounded-xl flex flex-col min-h-[400px] mb-stack-lg">
+        <div className="flex justify-between items-start lg:items-center mb-stack-lg flex-col lg:flex-row gap-4">
+          <h3 className="font-headline-md text-headline-md">Spending Intelligence</h3>
+          <MultiDateFilter 
+            availableDates={availableDates}
+            selectedYears={selectedYears}
+            selectedMonths={selectedMonths}
+            onChange={(years, months) => {
+              setSelectedYears(years);
+              setSelectedMonths(months);
+            }}
+          />
+        </div>
+        <div className="flex-1 w-full relative h-64 lg:h-80">
+          <MonthlyLineChart 
+            data={monthlySummary?.monthly} 
+            loading={analyticsLoading.monthly} 
+            height={360} 
+          />
+        </div>
+      </motion.div>
+      
+      {/* 50/50 Split: Categories and Transactions */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-stack-lg">
+        {/* Categories */}
         <div className="premium-card p-stack-lg rounded-xl flex flex-col min-h-[400px]">
           <h3 className="font-headline-md text-headline-md mb-stack-lg">Categories</h3>
           <div className="flex-1 w-full relative flex items-center justify-center">
@@ -215,11 +229,9 @@ const Dashboard = () => {
             />
           </div>
         </div>
-      </motion.div>
 
-      {/* Bottom Row: Transactions & Insights */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-3 gap-stack-lg">
-        <div className="xl:col-span-2 premium-card rounded-xl overflow-hidden flex flex-col">
+        {/* Transactions */}
+        <div className="premium-card rounded-xl overflow-hidden flex flex-col min-h-[400px]">
           <div className="p-stack-lg flex justify-between items-center border-b border-white/5">
             <h3 className="font-headline-md text-headline-md">Recent Transactions</h3>
             <Link to="/expenses" className="text-primary text-body-sm opacity-60 hover:opacity-100 transition-opacity">
@@ -233,15 +245,16 @@ const Dashboard = () => {
             />
           </div>
         </div>
-        
-        <div className="glass-panel p-stack-lg rounded-xl h-fit">
-          <IntelligentInsights 
-            data={aiSummary} 
-            loading={aiLoading.summary} 
-            onRefresh={() => refreshAi('summary')} 
-          />
-        </div>
       </motion.div>
+
+      {/* Insights Drawer */}
+      <InsightsDrawer 
+        isOpen={isInsightsDrawerOpen} 
+        onClose={() => setIsInsightsDrawerOpen(false)} 
+        data={aiSummary} 
+        loading={aiLoading.summary} 
+        onRefresh={() => refreshAi('summary')} 
+      />
 
     </motion.div>
   );
